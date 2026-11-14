@@ -3,6 +3,31 @@
 (function () {
   let registered = false
 
+  const KEYWORDS = {
+    java: 'abstract boolean break byte case catch char class continue default do double else enum extends final finally float for if implements import instanceof int interface long new null package private protected public return short static super switch this throw throws true false try var void while String Integer Long Double Boolean Character Math System Scanner ArrayList HashMap HashSet LinkedList ArrayDeque Arrays Collections List Map Set Queue Deque StringBuilder Object Random',
+    python: 'False None True and as assert break class continue def del elif else except finally for from global if import in is lambda nonlocal not or pass raise return try while with yield print input range len int str float list dict set tuple sorted enumerate zip map filter sum min max abs',
+    javascript: 'async await break case catch class const continue default do else export extends false finally for function if import in instanceof let new null return super switch this throw true try typeof undefined var void while yield console Math Number String Array Object JSON Map Set Promise parseInt parseFloat',
+  }
+
+  // 점이 없을 때의 제안: 같은 파일에 나온 이름(변수·메서드)과 언어 예약어. 언어 서버가 없어도 Ctrl+Space 로 뜬다.
+  function wordSuggestions(monaco, model, position, word, language) {
+    if (!word.word) return []
+    const names = new Set(KEYWORDS[language].split(' '))
+    const found = model.getValue().match(/[A-Za-z_$][A-Za-z0-9_$]*/g) || []
+    for (const n of found) names.add(n)
+    names.delete(word.word) // 지금 치는 글자 자체는 뺀다(다른 곳에 같은 이름이 있으면 아래에서 다시 들어옴)
+    if (found.filter((n) => n === word.word).length > 1) names.add(word.word)
+    const range = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn }
+    const kw = new Set(KEYWORDS[language].split(' '))
+    return [...names].map((name) => ({
+      label: name,
+      kind: kw.has(name) ? monaco.languages.CompletionItemKind.Keyword : monaco.languages.CompletionItemKind.Variable,
+      insertText: name,
+      sortText: (kw.has(name) ? '2' : '1') + name,
+      range,
+    }))
+  }
+
   function registerMemberCompletion(monaco) {
     if (registered) return
     registered = true
@@ -13,7 +38,7 @@
         provideCompletionItems(model, position) {
           const word = model.getWordUntilPosition(position)
           const before = model.getValueInRange({ startLineNumber: position.lineNumber, startColumn: 1, endLineNumber: position.lineNumber, endColumn: word.startColumn })
-          if (!before.endsWith('.')) return { suggestions: [] }
+          if (!before.endsWith('.')) return { suggestions: wordSuggestions(monaco, model, position, word, language) }
           const receiver = window.memberData.receiverOf(before.slice(0, -1))
           const members = window.memberData.membersFor(language, model.getValue(), receiver)
           const range = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn }

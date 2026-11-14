@@ -215,6 +215,7 @@
         mouseWheelZoom: true, // Ctrl + 휠로 글자 크기
         renderWhitespace: 'none',
         snippetSuggestions: 'top', // sout, fori 같은 단축 입력을 제안 맨 위에
+        wordBasedSuggestions: 'off', // 같은 파일 이름 제안은 member-completion.js 가 직접 한다
         tabCompletion: 'on', // 단축 입력을 친 뒤 Tab 으로 펼침
       })
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => { saver.flush() })
