@@ -9,6 +9,11 @@
     javascript: 'async await break case catch class const continue default do else export extends false finally for function if import in instanceof let new null return super switch this throw true try typeof undefined var void while yield console Math Number String Array Object JSON Map Set Promise parseInt parseFloat',
   }
 
+  function typeLabel(type) {
+    if (!type) return undefined
+    return type === 'array' ? '배열' : type
+  }
+
   // 점이 없을 때의 제안: 같은 파일에 나온 이름(변수·메서드)과 언어 예약어. 언어 서버가 없어도 Ctrl+Space 로 뜬다.
   function wordSuggestions(monaco, model, position, word, language) {
     if (!word.word) return []
@@ -19,8 +24,11 @@
     if (found.filter((n) => n === word.word).length > 1) names.add(word.word)
     const range = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn }
     const kw = new Set(KEYWORDS[language].split(' '))
+    const source = model.getValue()
     return [...names].map((name) => ({
       label: name,
+      // Java 는 선언을 읽어 변수 종류를 옆에 보여 준다(예: int, Scanner, 배열).
+      detail: language === 'java' && !kw.has(name) ? typeLabel(window.memberData.inferJavaType(source, name)) : undefined,
       kind: kw.has(name) ? monaco.languages.CompletionItemKind.Keyword : monaco.languages.CompletionItemKind.Variable,
       insertText: name,
       sortText: (kw.has(name) ? '2' : '1') + name,

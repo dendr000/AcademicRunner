@@ -34,8 +34,9 @@
 `sc.`, `num.` 처럼 점을 찍으면 그 변수의 메서드·속성이 뜹니다. `Tab` 또는 `Enter` 로 고르면 `nextInt()` 처럼 괄호까지 들어가고 커서가 괄호 안에 놓입니다. `length` 같은 속성은 괄호 없이 들어갑니다.
 
 - Java: 위쪽 코드에서 `Scanner sc`, `int[] num`, `String s`, `var sb = new StringBuilder()` 같은 선언을 읽어 종류를 짐작합니다. Scanner, String, StringBuilder, 배열, List·Map·Set·Deque, Math, Integer, Arrays, Collections, Character, System.out 을 지원합니다. 종류를 모르면 자주 쓰는 목록을 보여 줍니다.
-- Python, JavaScript: 종류를 짐작하지 않고 가벼운 공통 목록만 보여 줍니다.
-- 한계: 언어 서버가 아니라서 메서드 체인(`a.b().c`)이나 필드의 종류는 알지 못합니다.
+- Python, JavaScript: `a = [1, 2]`, `s = input()`, `d = {}`, `new Map()` 같은 대입을 읽어 리스트·문자열·사전·집합·Map 목록을 보여 주고, 모르면 가벼운 공통 목록을 보여 줍니다.
+- 메서드 결과: `sc.nextLine().` 처럼 한 단계 호출 뒤에서는 문자열·배열을 돌려주는 대표 메서드(next, nextLine, substring, trim, split, toCharArray 등)만 종류를 압니다.
+- 한계: 언어 서버가 아니라서 두 단계 이상 이어 쓴 체인이나 필드의 종류는 알지 못합니다.
 
 ### 이름 자동 완성
 

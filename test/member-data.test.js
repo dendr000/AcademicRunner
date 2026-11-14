@@ -68,6 +68,28 @@ test('Python·JavaScript 는 대표 메서드를 제안한다', () => {
   assert.deepStrictEqual(membersFor('java', '', null), [])
 })
 
+test('메서드 호출 결과(sc.nextLine().)의 종류를 짐작한다', () => {
+  const { receiverOf, callResultType } = require('../src/ui/member-data')
+  assert.strictEqual(receiverOf('String t = sc.nextLine()'), 'sc.nextLine()')
+  assert.strictEqual(callResultType('sc.nextLine()'), 'String')
+  assert.strictEqual(callResultType('s.split(" ")'), 'array')
+  assert.strictEqual(callResultType('list.get(0)'), null)
+  assert.ok(names(membersFor('java', 'Scanner sc;', 'sc.nextLine()')).includes('charAt'))
+  assert.ok(names(membersFor('java', 'String s;', 's.split(",")')).includes('length'))
+  assert.deepStrictEqual(membersFor('java', 'List<Integer> a;', 'a.get(0)'), [])
+})
+
+test('Python·JS 는 대입된 값으로 종류를 짐작한다', () => {
+  assert.ok(names(membersFor('python', 'a = [1, 2]', 'a')).includes('append'))
+  assert.ok(!names(membersFor('python', 'a = [1, 2]', 'a')).includes('upper'))
+  assert.ok(names(membersFor('python', 's = input()', 's')).includes('upper'))
+  assert.ok(names(membersFor('python', 'w = input().split()', 'w')).includes('append'))
+  assert.ok(names(membersFor('python', 'd = {}', 'd')).includes('items'))
+  assert.ok(names(membersFor('javascript', 'const m = new Map()', 'm')).includes('has'))
+  assert.ok(names(membersFor('javascript', 'let t = "abc"', 't')).includes('toUpperCase'))
+  assert.ok(names(membersFor('python', 'zzz', 'q')).includes('append')) // 모르면 공통 목록
+})
+
 test('중복 이름이 없고 이름 형식이 올바르다', () => {
   for (const lang of ['python', 'javascript']) {
     const list = names(membersFor(lang, '', 'zzz'))

@@ -103,6 +103,8 @@
   const JS_STATIC = { Math: dedupe(JS_MATH, 'Math'), console: dedupe(['log', 'error', 'warn', 'table'], 'console'), JSON: dedupe(['stringify', 'parse'], 'JSON'), Object: dedupe(['keys', 'values', 'entries', 'assign'], 'Object'), Number: dedupe(['parseInt', 'parseFloat', 'isInteger', 'MAX_SAFE_INTEGER'], 'Number') }
   const PY_STATIC = { math: dedupe(['sqrt', 'floor', 'ceil', 'pow', 'gcd', 'pi', 'log', 'factorial'], 'math'), sys: dedupe(['stdin', 'stdout', 'exit', 'setrecursionlimit'], 'sys') }
 
+  const PY_BY_KIND = { string: dedupe(PY_STR, '문자열'), list: dedupe(PY_LIST, '리스트'), dict: dedupe(PY_DICT, '사전'), set: dedupe(PY_SET, '집합') }
+  const JS_BY_KIND = { string: dedupe(JS_STRING, '문자열'), list: dedupe(JS_ARRAY, '배열'), object: dedupe(['hasOwnProperty', 'toString'], '객체'), map: dedupe(['get', 'set', 'has', 'delete', 'clear', 'size', 'keys', 'values', 'entries', 'forEach'], 'Map'), jsset: dedupe(['add', 'has', 'delete', 'clear', 'size', 'values', 'forEach'], 'Set') }
   const IDENT = '[A-Za-z_$][\\w$]*'
 
   // 선언을 읽어 변수 name 의 타입 이름을 돌려준다. 못 찾으면 null.
@@ -121,8 +123,38 @@
 
   // lineBeforeDot: 커서 앞 한 줄에서 마지막 '.' 앞까지(예: "int a = sc"). 받는 식(수신자)을 뽑는다.
   function receiverOf(lineBeforeDot) {
+    // 메서드 호출 결과: "sc.nextLine()" 처럼 한 단계 호출까지 받는다.
+    const call = new RegExp('(' + IDENT + '\\.' + IDENT + '\\((?:[^()]|\\([^()]*\\))*\\))\\s*$').exec(lineBeforeDot)
+    if (call) return call[1]
     const dotted = new RegExp('(' + IDENT + '(?:\\.' + IDENT + ')?)\\s*$').exec(lineBeforeDot)
     return dotted ? dotted[1] : null
+  }
+
+  const RETURNS_STRING = ['next', 'nextLine', 'toString', 'substring', 'trim', 'strip', 'toUpperCase', 'toLowerCase', 'replace', 'repeat', 'concat', 'valueOf', 'join', 'reverse']
+  const RETURNS_ARRAY = ['split', 'toCharArray', 'toArray']
+
+  // "sc.nextLine()" -> 반환 종류('String' 또는 'array'), 모르면 null
+  function callResultType(receiver) {
+    const m = new RegExp('^' + IDENT + '\\.(' + IDENT + ')\\(').exec(receiver)
+    if (!m) return null
+    if (RETURNS_STRING.includes(m[1])) return 'String'
+    if (RETURNS_ARRAY.includes(m[1])) return 'array'
+    return null
+  }
+
+  // Python, JS: 대입된 값을 보고 문자열, 리스트, 사전, 집합인지 짐작한다.
+  function inferScriptKind(language, source, name) {
+    const esc = name.replace(/[$]/g, '\\$')
+    const m = new RegExp('\\b' + esc + '\\s*=\\s*([^\\n;]*)').exec(source)
+    if (!m) return null
+    const v = m[1].trim()
+    if (/\.split\(/.test(v) || /^\[/.test(v) || /^(list|Array|sorted|range)\(/.test(v) || /^new Array/.test(v)) return 'list'
+    if (/^["'`]/.test(v) || /^(input|str|String)\(/.test(v)) return 'string'
+    if (/^\{\s*\}/.test(v) || /^dict\(/.test(v) || /^\{[^}]*:/.test(v)) return language === 'python' ? 'dict' : 'object'
+    if (/^set\(/.test(v) || /^\{[^:}]+\}/.test(v)) return 'set'
+    if (/^new Map/.test(v)) return 'map'
+    if (/^new Set/.test(v)) return 'jsset'
+    return null
   }
 
   // 반환: [{ name, detail, params }]
@@ -130,14 +162,22 @@
     if (!receiver) return []
     if (language === 'java') {
       if (STATIC[receiver] && !hasDeclaration(source, receiver)) return STATIC[receiver]
-      const type = inferJavaType(source, receiver)
+      const type = callResultType(receiver) || inferJavaType(source, receiver)
       if (type === 'array') return ARRAY
       if (type && BY_TYPE[type]) return BY_TYPE[type]
       if (type) return OBJECT
       return []
     }
-    if (language === 'python') return PY_STATIC[receiver] || GENERIC.python
-    if (language === 'javascript') return JS_STATIC[receiver] || GENERIC.javascript
+    if (language === 'python') {
+      if (PY_STATIC[receiver]) return PY_STATIC[receiver]
+      const k = inferScriptKind('python', source, receiver)
+      return PY_BY_KIND[k] || GENERIC.python
+    }
+    if (language === 'javascript') {
+      if (JS_STATIC[receiver]) return JS_STATIC[receiver]
+      const k = inferScriptKind('javascript', source, receiver)
+      return JS_BY_KIND[k] || GENERIC.javascript
+    }
     return []
   }
 
@@ -145,7 +185,7 @@
     return new RegExp('\\b' + IDENT + '(?:<[^;=()]*>)?(?:\\[\\s*\\])*\\s+' + name.replace(/[$.]/g, '\\$&') + '\\s*[=;,)]').test(source)
   }
 
-  const api = { inferJavaType, receiverOf, membersFor, BY_TYPE, STATIC }
+  const api = { inferJavaType, inferScriptKind, callResultType, receiverOf, membersFor, BY_TYPE, STATIC }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   else root.memberData = api
 })(typeof window !== 'undefined' ? window : globalThis)
