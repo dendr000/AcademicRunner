@@ -1,0 +1,30 @@
+<!-- Copyright (c) dendr000. MIT License. -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self'; script-src 'self'; img-src 'self' data:">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AcademicRunner</title>
+  <link rel="stylesheet" href="styles/tokens.css">
+  <link rel="stylesheet" href="styles/app.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1 class="app-name">AcademicRunner</h1>
+    <span class="spacer"></span>
+    <button id="theme-button" class="icon-button" type="button" aria-label="테마 전환" title="테마 전환 (시스템 / 라이트 / 다크)">
+      <span id="theme-icon" class="icon icon-monitor"></span>
+    </button>
+  </header>
+  <main class="empty-state">
+    <p class="empty-title">과제 풀이를 열어 실행하는 앱</p>
+    <p class="empty-sub">문제 목록과 편집기는 다음 단계에서 추가됩니다.</p>
+  </main>
+  <footer class="statusbar">
+    <span id="app-version">-</span>
+  </footer>
+  <script src="theme.js"></script>
+  <script src="renderer.js"></script>
+</body>
+</html>

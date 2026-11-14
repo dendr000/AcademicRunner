@@ -3,6 +3,7 @@ node_modules/
 dist/
 out/
 release/
+release-packager/
 *.log
 
 # 컴파일 결과·임시

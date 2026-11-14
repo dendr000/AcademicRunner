@@ -1,0 +1,23 @@
+/* Copyright (c) dendr000. MIT License. */
+/* 색은 이 파일 한 곳에만 둔다. 컴포넌트는 변수만 쓴다. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --border: #d9dde3;
+  --text: #1c2027;
+  --text-muted: #5b6573;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+  --hover: #e9edf2;
+}
+
+:root[data-theme="dark"] {
+  --bg: #1b1e24;
+  --surface: #232830;
+  --border: #353b46;
+  --text: #e6e9ee;
+  --text-muted: #9aa5b4;
+  --accent: #6b9bff;
+  --accent-contrast: #0f1115;
+  --hover: #2c323c;
+}
