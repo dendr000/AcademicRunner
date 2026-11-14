@@ -144,6 +144,12 @@
         setStatus('먼저 왼쪽에서 문제를 고르세요', 'fail')
         return
       }
+      // 함수 문제는 입력이 없으므로 실행(F5)은 케이스 전부 실행으로 이어진다.
+      if (mode === 'run' && target.problem.kind === 'function') {
+        showTab('cases')
+        await casesPanel.runAll()
+        return
+      }
       const prep = await hooks.prepareRun()
       if (!prep.ok) {
         showTab('output')
@@ -186,6 +192,10 @@
       lastRun = null
       saveCaseButton.disabled = true
       casesPanel.onOpened(problem)
+      inputArea.placeholder =
+        problem.kind === 'function'
+          ? '함수 문제는 입력을 읽지 않습니다. "케이스" 탭에서 인수와 기대 반환값을 만들고 실행(F5)하면 케이스를 전부 실행합니다.'
+          : '프로그램이 읽을 입력을 여기에 씁니다 (Scanner 로 읽는 값). 문제별로 기억합니다.'
       inputArea.value = readSaved(INPUT_KEY_PREFIX + problem.id)
       if (!running) {
         clearOutput()

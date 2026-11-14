@@ -60,6 +60,7 @@
     root.append(side, form)
 
     let problemId = null
+    let isFunction = false
     let cases = []
     let selectedId = null
     let results = new Map() // 케이스 id -> 결과
@@ -106,12 +107,19 @@
       resultBox.appendChild(head)
       if (typeof r.durationMs === 'number') resultBox.appendChild(el('span', 'out-note', `  ${window.runSummary.formatMs(r.durationMs)}\n`))
       else resultBox.appendChild(document.createTextNode('\n'))
-      if (r.status === 'fail' && r.diff) {
+      if (r.status === 'fail' && r.diff && r.diff.value) {
+        if (r.diff.error === 'BAD_EXPECTED') resultBox.appendChild(el('span', 'out-err', '기대 반환값이 올바른 JSON 이 아닙니다 (예: 55, "abc", [1,2], true)\n'))
+        else if (r.diff.error === 'BAD_ACTUAL') resultBox.appendChild(el('span', 'out-err', '실제 반환값을 읽지 못했습니다: ' + r.diff.actual + '\n'))
+        else resultBox.appendChild(el('span', 'out-note', '반환값이 다릅니다\n'))
+        if (r.diff.error !== 'BAD_EXPECTED') resultBox.appendChild(el('span', 'out-std', '기대: ' + r.diff.expected + '\n'))
+        resultBox.appendChild(el('span', 'out-err', '실제: ' + r.diff.actual + '\n'))
+      } else if (r.status === 'fail' && r.diff) {
         resultBox.appendChild(el('span', 'out-note', `${r.diff.line}번째 줄이 다릅니다\n`))
         resultBox.appendChild(el('span', 'out-std', '기대: ' + (r.diff.expected === null ? '(줄 없음)' : r.diff.expected) + '\n'))
         resultBox.appendChild(el('span', 'out-err', '실제: ' + (r.diff.actual === null ? '(줄 없음)' : r.diff.actual) + '\n'))
       }
-      if (r.stdout && r.status !== 'pass') resultBox.appendChild(el('span', 'out-note', '\n--- 실제 출력 ---\n' + r.stdout))
+      if (r.message) resultBox.appendChild(el('span', 'out-err', r.message + '\n'))
+      if (r.stdout && r.status !== 'pass' && !(r.diff && r.diff.value)) resultBox.appendChild(el('span', 'out-note', '\n--- 실제 출력 ---\n' + r.stdout))
       if (r.stderr) resultBox.appendChild(el('span', 'out-err', '\n--- 오류 출력 ---\n' + r.stderr))
     }
 
@@ -253,7 +261,14 @@
       activeRunId = started.runId
     }
 
+    function applyKind() {
+      inputArea.placeholder = isFunction ? '인수 (JSON 배열, 예: [10] 또는 [[1,2,3], "abc"])' : '입력'
+      expectedArea.placeholder = isFunction ? '기대 반환값 (JSON, 예: 55 또는 "abc" 또는 [1,2])' : '기대 출력 (줄 끝 공백과 끝의 빈 줄은 무시하고 비교)'
+    }
+
     function onOpened(problem) {
+      isFunction = problem.kind === 'function'
+      applyKind()
       if (problemId === problem.id) return
       problemId = problem.id
       results = new Map()

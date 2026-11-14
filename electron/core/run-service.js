@@ -10,6 +10,7 @@ const solutionFiles = require('./solution-files')
 const { startProcess, DEFAULT_TIMEOUT_MS } = require('./process-runner')
 const { languageOf, kindOf } = require('./scanner')
 const { compareOutput } = require('./output-compare')
+const { compareJson, lastLine } = require('./json-compare')
 
 const COMPILE_TIMEOUT_MS = 30000
 
@@ -43,8 +44,9 @@ function createRunService(deps) {
       if (!runner) return prepareFailure('UNSUPPORTED', '아직 지원하지 않는 언어입니다 (' + language + ')')
       const withCases = Array.isArray(request.cases)
       const mode = request.mode === 'compile' ? 'compile' : 'run'
-      if (mode === 'run' && kindOf(request.fileName) !== 'io') {
-        return prepareFailure('NOT_IO_PROBLEM', '함수 작성 문제는 아직 실행할 수 없습니다(시험 케이스 단계에서 지원). 컴파일 확인은 가능합니다.')
+      const kind = kindOf(request.fileName)
+      if (mode === 'run' && kind !== 'io' && !withCases) {
+        return prepareFailure('NOT_IO_PROBLEM', '함수 작성 문제는 입력을 읽지 않아 단독 실행할 수 없습니다. 케이스 탭에서 케이스(인수와 기대 반환값)를 만든 뒤 "전부 실행(F7)"을 누르세요. 컴파일 확인(F6)은 가능합니다.')
       }
       if (withCases && request.cases.length === 0) return prepareFailure('NO_CASES', '실행할 케이스가 없습니다')
 
@@ -56,7 +58,7 @@ function createRunService(deps) {
       }
 
       try {
-        const prepared = runner.prepare({ source: read.content, fileName: request.fileName, mode, dir }, deps.tools)
+        const prepared = runner.prepare({ source: read.content, fileName: request.fileName, mode, dir, kind, cases: withCases ? request.cases : undefined }, deps.tools)
         if (prepared.error) return prepareFailure(prepared.error, prepared.message)
         // 오류 메시지에 임시 폴더 경로가 길게 나오지 않게 파일 이름만 남긴다.
         const clean = (text) => text.split(dir + path.sep).join('')
@@ -114,8 +116,10 @@ function createRunService(deps) {
               continue
             }
             emit({ type: 'case-start', index: i, id: c.id })
-            const r = await exec(step, c.input || '', false)
-            const result = classifyCase(c, r, clean)
+            // 러너가 케이스마다 인수·입력을 따로 정하면(Java 함수 문제: 케이스 번호) 그것을 쓴다.
+            const spec = step.perCase ? step.perCase(c, i) : null
+            const r = await exec(spec ? { ...step, args: spec.args } : step, spec && spec.input !== undefined ? spec.input : c.input || '', false)
+            const result = classifyCase(c, r, clean, kind)
             caseResults.push(result)
             emit({ type: 'case-done', index: i, id: c.id, result })
           }
@@ -153,12 +157,20 @@ function createRunService(deps) {
 }
 
 // 케이스 하나의 실행 결과를 pass / fail / timeout / error / truncated / stopped 로 분류한다.
-function classifyCase(c, r, clean) {
+function classifyCase(c, r, clean, kind) {
   const base = { id: c.id, exitCode: r.code, durationMs: r.durationMs, stdout: r.stdout, stderr: clean(r.stderr) }
   if (r.stopped) return { ...base, status: 'stopped' }
   if (r.timedOut) return { ...base, status: 'timeout' }
   if (r.truncated) return { ...base, status: 'truncated' }
   if (r.spawnError || r.code !== 0) return { ...base, status: 'error', spawnError: r.spawnError }
+  if (kind === 'function') {
+    // 함수 문제: 마지막 줄이 반환값(JSON). 값으로 비교한다(공백·키 순서·1 과 1.0 은 같다).
+    const line = lastLine(r.stdout)
+    if (line === '') return { ...base, status: 'error', message: '반환값이 출력되지 않았습니다' }
+    const cmp = compareJson(c.expected, line)
+    if (cmp.pass) return { ...base, status: 'pass' }
+    return { ...base, status: 'fail', diff: { value: true, expected: cmp.expectedText, actual: cmp.actualText, error: cmp.error } }
+  }
   const diff = compareOutput(c.expected, r.stdout)
   return diff.pass ? { ...base, status: 'pass' } : { ...base, status: 'fail', diff }
 }

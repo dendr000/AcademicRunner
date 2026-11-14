@@ -27,6 +27,8 @@ AcademicRunner/
       tool-locator.js  javac/java/python 위치 찾기
       case-store.js    시험 케이스 저장(cases.json)
       output-compare.js  기대/실제 출력 비교
+      json-compare.js  함수 문제 반환값(JSON) 비교
+      harness/java-harness.js  Java 함수 문제 호출 코드 생성
       runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js)
   scripts/
     make-icon.cjs      icon.svg 에서 icon.ico 생성
@@ -58,5 +60,8 @@ AcademicRunner/
     case-store.test.js      케이스 저장
     output-compare.test.js  출력 비교
     run-service-cases.test.js  케이스 전부 실행
+    json-compare.test.js    반환값 비교
+    java-harness.test.js    Java 호출 코드 생성
+    run-service-function.test.js  함수 문제 실행
     settings-timeout.test.js  시간 제한 설정
 ```
