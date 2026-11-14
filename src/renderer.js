@@ -9,7 +9,16 @@
 
   let scan = null
 
-  const editorPane = window.createEditorPane(workspace, api)
+  // 실행 패널은 편집기 아래에 붙는다. 편집기가 "저장 상태가 괜찮은지"와 "무슨 파일이 열렸는지"를 알려 준다.
+  let editorPane = null
+  const runPanel = window.createRunPanel(api, {
+    prepareRun: () => editorPane.prepareRun(),
+    currentFile: () => editorPane.currentFile(),
+  })
+  editorPane = window.createEditorPane(workspace, api, {
+    footer: runPanel.element,
+    onOpened: (problem) => runPanel.onOpened(problem),
+  })
   let openedId = null // 지금 편집기에 열려 있는 문제
 
   // 문제를 연다. 저장하지 못한 변경 때문에 사용자가 이동을 취소하면 목록 선택을 원래대로 돌린다.

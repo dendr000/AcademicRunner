@@ -2,7 +2,7 @@
 
 학원 과제 풀이 파일(Java·Python·JavaScript)을 한 화면에서 열어 고치고, 클릭이나 단축키 한 번으로 실행·시험하는 개인용 Windows 앱입니다.
 
-- 상태: v0.2.0 개발 중 (M2 완료: 편집기·자동 저장·전체 복사·시작 코드로 되돌리기. 실행은 다음 단계)
+- 상태: v0.3.0 개발 중 (M3 완료: Java 입출력 문제 실행. Python·JS 와 시험 케이스는 다음 단계)
 - 계획서: [docs/plans/00-master-plan.md](docs/plans/00-master-plan.md)
 - 문제 풀이 보관 폴더: 기본 `C:\dev\AcademicTest` (앱의 "폴더 선택"으로 변경)
 

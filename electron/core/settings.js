@@ -7,6 +7,15 @@ const path = require('node:path')
 const DEFAULTS = {
   // 문제 풀이를 모아 둔 폴더. 설정 화면에서 바꿀 수 있다.
   root: 'C:\\dev\\AcademicTest',
+  // 실행 시간 제한(초). 무한 반복 풀이를 끊는다.
+  timeoutSec: 10,
+}
+
+const MIN_TIMEOUT_SEC = 1
+const MAX_TIMEOUT_SEC = 120
+
+function validTimeout(value) {
+  return typeof value === 'number' && Number.isFinite(value) && value >= MIN_TIMEOUT_SEC && value <= MAX_TIMEOUT_SEC
 }
 
 function createSettingsStore(dir) {
@@ -23,12 +32,15 @@ function createSettingsStore(dir) {
   }
 
   function get() {
-    return { ...DEFAULTS, ...read() }
+    const merged = { ...DEFAULTS, ...read() }
+    if (!validTimeout(merged.timeoutSec)) merged.timeoutSec = DEFAULTS.timeoutSec // 깨진 값은 기본값으로
+    return merged
   }
 
   function set(patch) {
     const next = { ...read() }
     if (typeof patch.root === 'string' && patch.root.trim() !== '') next.root = patch.root
+    if (validTimeout(patch.timeoutSec)) next.timeoutSec = patch.timeoutSec
     fs.mkdirSync(dir, { recursive: true })
     const tmp = file + '.tmp'
     fs.writeFileSync(tmp, JSON.stringify(next, null, 2), 'utf8')

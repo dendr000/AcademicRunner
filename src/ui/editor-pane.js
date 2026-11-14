@@ -21,7 +21,9 @@
     return b
   }
 
-  function createEditorPane(container, api) {
+  // options: { footer: 편집기 아래에 붙일 요소(실행 패널), onOpened(problem, level, file): 파일을 열었을 때 }
+  function createEditorPane(container, api, options) {
+    options = options || {}
     // 화면 부품
     const root = el('div', 'editor-pane')
     const header = el('div', 'editor-header')
@@ -32,6 +34,7 @@
     banner.hidden = true
     const host = el('div', 'editor-host')
     root.append(header, banner, host)
+    if (options.footer) root.appendChild(options.footer)
 
     // 열려 있는 파일의 상태
     let monaco = null
@@ -274,6 +277,7 @@
       saver.reset()
       renderHeader()
       editor.focus()
+      if (options.onOpened) options.onOpened(problem, level, file)
       return true
     }
 
@@ -289,6 +293,16 @@
         return openFile(problem, level, problem.files[0])
       },
       flush: () => saver.flush(),
+      // 지금 열려 있는 파일. 실행 패널이 무엇을 실행할지 알아내는 데 쓴다.
+      currentFile: () => (current ? { problem: current.problem, level: current.level, file: current.file } : null),
+      // 실행해도 되는 상태인가: 저장하지 못한 변경이나 충돌이 있으면 디스크의 옛 파일을 실행하게 되므로 막는다.
+      async prepareRun() {
+        if (!current) return { ok: false, reason: '열려 있는 파일이 없습니다' }
+        await saver.flush()
+        if (conflict) return { ok: false, reason: '다른 프로그램이 파일을 바꿔 저장하지 못했습니다. 위 안내에서 먼저 선택하세요' }
+        if (saver.state === 'error') return { ok: false, reason: lastError || '저장하지 못해 실행하지 않습니다' }
+        return { ok: true }
+      },
       // 열려 있던 파일을 닫는다(저장은 하지 않음). 문제 폴더가 바뀌었을 때 옛 파일이 새 폴더에 저장되지 않게 한다.
       discard() {
         openSerial++

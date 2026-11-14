@@ -3,6 +3,9 @@
 const { ipcMain, dialog, app, clipboard } = require('electron')
 const { scanProblems } = require('./core/scanner')
 const files = require('./core/solution-files')
+const tools = require('./core/tool-locator')
+const { createRunService } = require('./core/run-service')
+const { runners } = require('./core/runners')
 const { createSettingsStore } = require('./core/settings')
 
 function registerIpcHandlers(getWindow, appId) {
@@ -25,6 +28,57 @@ function registerIpcHandlers(getWindow, appId) {
     files.writeSolution(settings.get().root, problemId, fileName, content, baseMtimeMs, force === true),
   )
   ipcMain.handle('files:restoreOriginal', (_e, problemId, fileName) => files.restoreOriginal(settings.get().root, problemId, fileName))
+  // 실행: 한 번에 하나만 돈다. 출력은 run:event 로 조금씩 보내고, 끝나면 type 'done' 으로 결과를 보낸다.
+  const runService = createRunService({ runners, tools })
+  let activeRun = null
+  let runCounter = 0
+
+  ipcMain.handle('run:start', (_e, request) => {
+    if (activeRun) return { ok: false, error: 'BUSY' }
+    if (!request || typeof request !== 'object') return { ok: false, error: 'BAD_ARGUMENT' }
+    const current = settings.get()
+    const runId = ++runCounter
+    const send = (payload) => {
+      const win = getWindow()
+      if (win && !win.isDestroyed()) win.webContents.send('run:event', { runId, ...payload })
+    }
+    const job = runService.start(
+      {
+        root: current.root,
+        problemId: request.problemId,
+        fileName: request.fileName,
+        mode: request.mode === 'compile' ? 'compile' : 'run',
+        input: typeof request.input === 'string' ? request.input : '',
+        timeoutMs: current.timeoutSec * 1000,
+      },
+      send,
+    )
+    activeRun = { runId, job }
+    job.done
+      .catch((e) => ({ ok: false, phase: 'prepare', error: 'INTERNAL', message: String((e && e.message) || e) }))
+      .then((result) => {
+        activeRun = null
+        send({ type: 'done', result })
+      })
+    return { ok: true, runId }
+  })
+
+  // 앱이 끝날 때 돌고 있는 풀이 프로세스가 남지 않게 한다.
+  app.on('will-quit', () => {
+    if (activeRun) activeRun.job.stop()
+  })
+
+  ipcMain.handle('run:stop', () => {
+    if (!activeRun) return { ok: false }
+    activeRun.job.stop()
+    return { ok: true }
+  })
+
+  ipcMain.handle('tools:info', () => ({
+    java: tools.java() ? tools.java().version : null,
+    python: tools.python() ? tools.python().version : null,
+  }))
+
   ipcMain.handle('clipboard:write', (_e, text) => {
     if (typeof text !== 'string') return { ok: false }
     clipboard.writeText(text)
