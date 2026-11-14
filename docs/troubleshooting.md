@@ -18,8 +18,14 @@
 - 원인: 편집기에 붙어 있는 모델을 먼저 버려서 편집기 내부 작업이 취소됨.
 - 해결: 새 모델을 붙인 뒤에 옛 모델을 버리고, 남는 `Canceled` 거부는 로그로 남기지 않는다.
 
-## exe 재빌드가 "EBUSY ... app.asar" 로 멈춤 (2026-11-14, 미해결)
+## exe 재빌드가 "EBUSY ... app.asar" 로 멈춤 (2026-11-14, 해결)
 
-- 증상: `npm run dist:win` 이 `release-packager\AcademicRunner-win32-x64\resources\app.asar` 삭제 중 `EBUSY: resource busy or locked` 로 실패한다. 실패 시점에 출력 폴더가 일부 지워져 이전 exe 도 없는 상태가 된다.
-- 원인: 어떤 프로그램이 `app.asar` 를 열고 있다. 실행 중인 AcademicRunner.exe, 탐색기 미리보기, 백신 검사 등이 후보다. 이번에는 AcademicRunner 프로세스가 보이지 않았다(StardewGuide 는 별개).
-- 해결: 잠근 프로그램을 닫거나 PC 를 다시 시작한 뒤 `npm run dist:win` 과 `npm run verify:exe` 를 다시 실행한다.
+- 증상: `npm run dist:win` 이 `release-packagerAcademicRunner-win32-x64esourcesapp.asar` 삭제 중 `EBUSY: resource busy or locked` 로 실패한다. 실패 시점에 출력 폴더가 일부 지워져 이전 exe 도 없는 상태가 된다.
+- 원인: Claude 데스크톱 앱이 `app.asar` 를 열어 두고 있었다(Windows 잠금 조회 API `rstrtmgr` 로 확인). AcademicRunner 프로세스는 없었고, 폴더 이름 바꾸기도 접근 거부로 막혔다. 같은 증상이 탐색기 미리보기·백신 검사에서도 생길 수 있다.
+- 해결: 잠금이 풀린 뒤 `npm run dist:win` 과 `npm run verify:exe` 를 다시 실행하니 통과했다. 계속 막히면 잠근 프로그램을 닫거나 다시 시작한 뒤 재시도한다. 어떤 프로그램이 잡고 있는지는 위 `rstrtmgr` 로 알아낼 수 있다.
+
+## 실행하면 NoSuchElementException 으로 실패함 (2026-11-14, 사용 안내)
+
+- 증상: 입출력 문제를 실행하면 `java.util.NoSuchElementException` (스택에 `Scanner.nextInt`) 이 나오고 `실행 실패, 종료 코드 1`.
+- 원인: 코드 오류가 아니라 **입력 탭이 비어 있어서** `Scanner` 가 읽을 값이 없다. 프로그램이 숫자를 읽는 줄(예: `int N = sc.nextInt();`)에서 멈춘다.
+- 해결: 입력 탭에 프로그램이 읽는 값을 쓰고 다시 실행한다(예: 별 찍기는 `5`). 입력은 문제별로 기억된다.
