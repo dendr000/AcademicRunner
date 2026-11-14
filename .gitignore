@@ -1,0 +1,16 @@
+# 의존성·빌드
+node_modules/
+dist/
+out/
+release/
+*.log
+
+# 컴파일 결과·임시
+*.class
+*.tmp
+
+# 비밀
+.env
+*.pem
+*.key
+*.pfx
