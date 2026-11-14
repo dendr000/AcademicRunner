@@ -78,6 +78,7 @@
 
   function setSidebarCollapsed(collapsed) {
     layout.classList.toggle('sidebar-collapsed', collapsed)
+    document.getElementById('sidebar-button').setAttribute('aria-pressed', collapsed ? 'true' : 'false')
     writeSaved(SIDEBAR_KEY, collapsed ? '1' : '0')
   }
 
@@ -147,6 +148,9 @@
     }
   })
   setSidebarCollapsed(readSaved(SIDEBAR_KEY) === '1')
+  document.getElementById('sidebar-button').addEventListener('click', () => {
+    setSidebarCollapsed(!layout.classList.contains('sidebar-collapsed'))
+  })
   window.installShortcuts({
     quickJump() {
       setSidebarCollapsed(false)

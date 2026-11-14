@@ -3,7 +3,7 @@
 ```text
 AcademicRunner/
   README.md  CHANGELOG.md  LICENSE  package.json
-  assets/icons/        화면에서 쓰는 아이콘(sun, moon, monitor)
+  assets/icons/        화면에서 쓰는 아이콘(sun, moon, monitor, menu)
   build/               앱 아이콘 (icon.svg 원본, icon.ico, icon.png)
   docs/
     plans/00-master-plan.md   마스터 계획서

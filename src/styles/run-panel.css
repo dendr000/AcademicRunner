@@ -1,5 +1,6 @@
 /* Copyright (c) dendr000. MIT License. */
 .run-panel {
+  container-type: inline-size; /* 패널 폭에 따라 버튼 글자를 줄인다(아래 @container) */
   display: flex;
   flex-direction: column;
   flex: none;
@@ -14,11 +15,21 @@
 
 .run-bar {
   display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto; /* 아주 좁으면 줄바꿈 대신 가로로 밀어서 본다 */
+  scrollbar-width: thin;
   align-items: center;
   gap: 8px;
   padding: 6px 12px;
   border-bottom: 1px solid var(--border);
 }
+
+/* 줄바꿈 없이 한 줄을 지킨다: 버튼과 탭은 줄어들지 않고, 상태 글자만 말줄임으로 줄어든다. */
+.run-bar > * { flex: none; }
+.run-bar > .spacer { flex: 1 1 0; min-width: 0; }
+.run-bar > .run-status { flex: 0 1 auto; }
+.run-bar .text-button,
+.run-tab { white-space: nowrap; }
 
 .run-tab {
   height: 26px;
@@ -89,6 +100,18 @@
 .out-note { color: var(--text-muted); }
 .out-note-ok { color: var(--success); }
 .out-note-fail { color: var(--danger); }
+
+/* 좁은 패널: 단축키 안내를 숨기고, 더 좁으면 상태 글자도 숨긴다 */
+@container (max-width: 820px) {
+  .run-bar .hint,
+  .cases-toolbar .hint { display: none; }
+}
+
+@container (max-width: 600px) {
+  .run-bar > .run-status { display: none; }
+  .run-bar { gap: 6px; padding: 6px 8px; }
+  .run-bar .text-button { padding: 0 8px; }
+}
 
 /* 실시간 입력줄 */
 .run-live {

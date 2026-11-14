@@ -37,9 +37,16 @@
     const tabOutput = el('button', 'run-tab', '출력')
     const tabCases = el('button', 'run-tab', '케이스')
     for (const t of [tabInput, tabOutput, tabCases]) t.type = 'button'
-    const runButton = el('button', 'text-button primary', '실행 (F5)')
-    const stopButton = el('button', 'text-button', '중지 (Shift+F5)')
-    const compileButton = el('button', 'text-button', '컴파일 확인 (F6)')
+    // 단축키 안내(hint)는 패널이 좁으면 CSS 로 숨겨 버튼이 줄바꿈되지 않게 한다.
+    const labeled = (className, label, hint) => {
+      const b = el('button', className, label)
+      b.appendChild(el('span', 'hint', ' ' + hint))
+      b.title = label + ' ' + hint
+      return b
+    }
+    const runButton = labeled('text-button primary', '실행', '(F5)')
+    const stopButton = labeled('text-button', '중지', '(Shift+F5)')
+    const compileButton = labeled('text-button', '컴파일 확인', '(F6)')
     const saveCaseButton = el('button', 'text-button', '케이스로 저장')
     saveCaseButton.title = '방금 실행한 입력과 출력을 시험 케이스로 저장합니다'
     for (const b of [runButton, stopButton, compileButton, saveCaseButton]) b.type = 'button'

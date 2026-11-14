@@ -64,6 +64,7 @@ body {
 .icon-sun { -webkit-mask-image: url("../../assets/icons/sun.svg"); }
 .icon-moon { -webkit-mask-image: url("../../assets/icons/moon.svg"); }
 .icon-monitor { -webkit-mask-image: url("../../assets/icons/monitor.svg"); }
+.icon-menu { -webkit-mask-image: url("../../assets/icons/menu.svg"); }
 
 .empty-state {
   flex: 1;
@@ -99,4 +100,14 @@ body {
 .status-tools {
   margin-right: 16px;
   color: var(--text-muted);
+}
+
+/* 상태줄은 한 줄을 지킨다: 폴더 경로만 말줄임으로 줄이고, 좁으면 도구 버전을 숨긴다. */
+.statusbar { white-space: nowrap; overflow: hidden; }
+#status-root { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.statusbar > .spacer { flex: 1 1 0; min-width: 8px; }
+.status-tools, #app-version { flex: none; }
+
+@media (max-width: 1100px) {
+  .status-tools { display: none; }
 }
