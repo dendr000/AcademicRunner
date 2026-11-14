@@ -47,6 +47,8 @@ AcademicRunner/
     ui/cases-panel.js     케이스 탭(목록·편집·전부 실행·결과)
     ui/run-panel.js       실행 패널(입력·출력 탭, 실행·중지·컴파일, 단축키)
     ui/run-summary.js     실행 결과 한 줄 요약(순수 함수)
+    ui/snippet-data.js    단축 입력(스니펫) 목록(순수 데이터)
+    ui/snippets.js        스니펫을 편집기에 등록
     ui/problem-nav.js     이전/다음 문제 계산(순수 함수)
     ui/shortcuts.js       앱 전체 단축키
   test/
@@ -66,5 +68,6 @@ AcademicRunner/
     java-harness.test.js    Java 호출 코드 생성
     run-service-function.test.js  함수 문제 실행
     problem-nav.test.js     이전/다음 문제 계산
+    snippet-data.test.js    스니펫 목록 형식
     settings-timeout.test.js  시간 제한 설정
 ```

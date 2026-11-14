@@ -1,13 +1,19 @@
 # 업데이트 내역 (CHANGELOG)
 
-## [1.0.0] - 2026-11-14 17:55
+## [1.1.0] - 2026-11-14 17:31
+
+### 추가 (Added)
+- 편집기 단축 입력(스니펫): Java 는 `sout`, `soutv`, `psvm`, `fori`, `foreach`, `if`, `while`, `try`, `sc`(Scanner), `al`(ArrayList) 등, Python 은 `print`, `inpl`(정수 리스트 입력), `fori`, `def`, `sol` 등, JavaScript 는 `log`, `forof`, `fn`, `arrow`, `stdin` 등 (언어별 약 25~45개)
+- 단축 입력을 친 뒤 `Tab` 이나 `Enter` 로 펼치고, `Tab` 으로 다음 칸으로 이동함 (제안 목록 맨 위에 표시)
+
+## [1.0.0] - 2026-11-14 17:20
 
 ### 추가 (Added)
 - 단축키: `Ctrl+P` 빠른 이동(검색 후 `Enter`), `Alt+↑`/`Alt+↓` 이전·다음 문제, `Ctrl+B` 목록 접기·펴기, `Ctrl+Shift+C` 코드 전체 복사, `Ctrl+Shift+R` 시작 코드로 되돌리기
 - 앱을 다시 켜면 마지막에 연 문제와 목록 접힘 상태를 복원함
 - 하단 상태줄에 찾은 Java·Python·Node 버전을 표시함
 
-## [0.6.0] - 2026-11-14 17:30
+## [0.6.0] - 2026-11-14 17:16
 
 ### 추가 (Added)
 - 함수 작성 문제(`Solution`)를 케이스로 실행함: 인수를 JSON 배열로, 기대 반환값을 JSON 으로 적고 "전부 실행"(F7)

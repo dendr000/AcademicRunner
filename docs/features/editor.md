@@ -15,6 +15,22 @@
 | 글자 크기 | 편집기 위에서 `Ctrl+휠` |
 | 다른 파일 보기 | 문제에 파일이 여러 개면 위쪽 탭 클릭 |
 
+## 단축 입력(스니펫)
+
+`sout` 처럼 줄임말을 치면 제안 목록 맨 위에 뜨고, `Tab` 이나 `Enter` 로 코드가 펼쳐집니다. 펼친 뒤 `Tab` 을 누르면 빈칸(예: `fori` 의 `i`, `n`)으로 차례로 이동하고, 같은 이름의 칸은 함께 바뀝니다.
+
+| 줄임말 | Java | Python | JavaScript |
+|---|---|---|---|
+| 출력 | `sout` `souf` `soutv` `sop` `serr` | `print` | `log` `logv` |
+| 반복 | `fori` `forr` `for` `iter` `foreach` `while` `dowhile` | `for` `fori` `forr` `fore` `while` | `for` `fori` `forr` `forof` `forin` `foreach` `while` |
+| 조건 | `if` `ifelse` `elseif` `else` `switch` `case` | `if` `ifelse` `elif` `else` | `if` `ifelse` `elseif` `else` `switch` |
+| 입력 | `sc` `scn` `scl` `scs` `br` | `inp` `inpi` `inpl` `inpm` `stdin` | `stdin` `rl` |
+| 함수·클래스 | `psvm` `main` `meth` `cls` `sol` | `def` `sol` `cls` `ifmain` | `fn` `sol` `arrow` `cls` |
+| 자료구조 | `arr` `arr2` `al` `hm` `hs` `dq` `pq` `sb` | `lc` `swap` | `map` `filter` `reduce` `swap` |
+| 기타 | `try` `tryf` `pint` `swap` `imp` | `try` `with` `imp` `swap` | `try` `swap` |
+
+전체 목록은 `src/ui/snippet-data.js` 에 있고, 줄을 추가하면 바로 쓸 수 있습니다. 본문 문법은 `$1`(이동 칸), `${1:i}`(기본값이 있는 칸), `$0`(마지막 커서 위치)입니다.
+
 상태 표시: `저장됨` / `저장 대기 중...` / `저장 중...` / `저장 실패`.
 
 ## 저장이 안전한 이유
@@ -46,8 +62,9 @@
 
 - `electron/core/solution-files.js` 읽기·저장·되돌리기·경로 검사
 - `src/ui/editor-pane.js` 편집 영역(탭, 상태, 버튼, 충돌 안내), `src/ui/monaco-loader.js` 편집기 불러오기
+- `src/ui/snippet-data.js` 스니펫 목록(순수 데이터), `src/ui/snippets.js` Monaco 에 등록
 - `scripts/vendor-monaco.js` Monaco 복사(언어 서비스·번역·소스맵 제외, 약 5MB)
 
 ## 시험
 
-`test/solution-files.test.js`(읽기·BOM·경로 조작·저장·충돌·되돌리기, 임시 폴더), `test/autosaver.test.js`(가짜 시계로 지연·연속 입력·실패·저장 중 재편집). 편집기 화면은 개발 실행에서 실제 마우스·키 입력으로 확인했습니다(자동 저장, 외부 변경, 충돌, 되돌리기, 복사, 문제 이동 시 저장, 라이트/다크).
+`test/solution-files.test.js`(읽기·BOM·경로 조작·저장·충돌·되돌리기, 임시 폴더), `test/snippet-data.test.js`(스니펫 목록 형식: 중복·닫힘·필수 항목), `test/autosaver.test.js`(가짜 시계로 지연·연속 입력·실패·저장 중 재편집). 편집기 화면은 개발 실행에서 실제 마우스·키 입력으로 확인했습니다(자동 저장, 외부 변경, 충돌, 되돌리기, 복사, 문제 이동 시 저장, 라이트/다크).

@@ -202,6 +202,7 @@
         host.replaceChildren(el('p', 'list-empty', e.message))
         return false
       }
+      window.registerSnippets(monaco)
       editor = monaco.editor.create(host, {
         theme: themeName(),
         automaticLayout: true,
@@ -212,6 +213,8 @@
         scrollBeyondLastLine: false,
         mouseWheelZoom: true, // Ctrl + 휠로 글자 크기
         renderWhitespace: 'none',
+        snippetSuggestions: 'top', // sout, fori 같은 단축 입력을 제안 맨 위에
+        tabCompletion: 'on', // 단축 입력을 친 뒤 Tab 으로 펼침
       })
       editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => { saver.flush() })
       new MutationObserver(() => monaco.editor.setTheme(themeName())).observe(document.documentElement, {
