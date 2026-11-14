@@ -95,3 +95,8 @@ body {
   color: var(--text-muted);
   font-size: 12px;
 }
+
+.status-tools {
+  margin-right: 16px;
+  color: var(--text-muted);
+}

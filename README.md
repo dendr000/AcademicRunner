@@ -2,7 +2,7 @@
 
 학원 과제 풀이 파일(Java·Python·JavaScript)을 한 화면에서 열어 고치고, 클릭이나 단축키 한 번으로 실행·시험하는 개인용 Windows 앱입니다.
 
-- 상태: v0.6.0 개발 중 (M6 완료: 함수 작성 문제도 케이스로 시험. 단축키·편의 마무리(M7)가 남음)
+- 상태: v1.0.0 (계획한 기능 완료: 문제 목록, 편집·자동 저장, Java·Python·JS 실행, 시험 케이스, 함수 문제 시험, 단축키). 단축키는 [docs/features/shortcuts.md](docs/features/shortcuts.md)
 - 계획서: [docs/plans/00-master-plan.md](docs/plans/00-master-plan.md)
 - 문제 풀이 보관 폴더: 기본 `C:\dev\AcademicTest` (앱의 "폴더 선택"으로 변경)
 

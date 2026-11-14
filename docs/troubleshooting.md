@@ -17,3 +17,9 @@
 - 증상: 다른 문제로 옮길 때 개발자 도구에 `Canceled: Canceled` 예외.
 - 원인: 편집기에 붙어 있는 모델을 먼저 버려서 편집기 내부 작업이 취소됨.
 - 해결: 새 모델을 붙인 뒤에 옛 모델을 버리고, 남는 `Canceled` 거부는 로그로 남기지 않는다.
+
+## exe 재빌드가 "EBUSY ... app.asar" 로 멈춤 (2026-11-14, 미해결)
+
+- 증상: `npm run dist:win` 이 `release-packager\AcademicRunner-win32-x64\resources\app.asar` 삭제 중 `EBUSY: resource busy or locked` 로 실패한다. 실패 시점에 출력 폴더가 일부 지워져 이전 exe 도 없는 상태가 된다.
+- 원인: 어떤 프로그램이 `app.asar` 를 열고 있다. 실행 중인 AcademicRunner.exe, 탐색기 미리보기, 백신 검사 등이 후보다. 이번에는 AcademicRunner 프로세스가 보이지 않았다(StardewGuide 는 별개).
+- 해결: 잠근 프로그램을 닫거나 PC 를 다시 시작한 뒤 `npm run dist:win` 과 `npm run verify:exe` 를 다시 실행한다.

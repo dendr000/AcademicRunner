@@ -318,6 +318,7 @@
         }
       },
       copyAll,
+      restore,
       get isOpen() {
         return current !== null
       },

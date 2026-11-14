@@ -6,6 +6,25 @@
   const levelFilter = document.getElementById('level-filter')
   const workspace = document.getElementById('workspace')
   const statusRoot = document.getElementById('status-root')
+  const layout = document.querySelector('.layout')
+  const LAST_PROBLEM_KEY = 'academicrunner.lastProblem'
+  const SIDEBAR_KEY = 'academicrunner.sidebarCollapsed'
+
+  function readSaved(key) {
+    try {
+      return window.localStorage.getItem(key)
+    } catch {
+      return null
+    }
+  }
+
+  function writeSaved(key, value) {
+    try {
+      window.localStorage.setItem(key, value)
+    } catch {
+      // 저장소를 못 쓰면 이번 실행에서만 유지한다.
+    }
+  }
 
   let scan = null
 
@@ -27,6 +46,7 @@
     const moved = await editorPane.open(problem, level)
     if (moved) {
       openedId = problem.id
+      writeSaved(LAST_PROBLEM_KEY, problem.id)
     } else {
       list.select(openedId)
       refreshList()
@@ -35,10 +55,30 @@
 
   const list = window.createProblemList(document.getElementById('problem-list'), showWorkspace)
 
+  // 지금 화면에 보이는(검색·단계 필터를 거친) 단계 목록
+  function visibleLevels() {
+    if (!scan || !scan.ok) return []
+    return window.problemFilter.filterLevels(scan.levels, searchInput.value, levelFilter.value)
+  }
+
   function refreshList() {
     if (!scan || !scan.ok) return // 스캔 실패 상태에서는 목록을 그리지 않는다
-    const filtered = window.problemFilter.filterLevels(scan.levels, searchInput.value, levelFilter.value)
-    list.render(filtered, '맞는 문제가 없습니다.')
+    list.render(visibleLevels(), '맞는 문제가 없습니다.')
+  }
+
+  // 목록에서 고른 것처럼 문제를 연다(단축키·마지막 문제 복원용).
+  async function openProblem(entry) {
+    if (!entry) return
+    list.select(entry.problem.id)
+    refreshList()
+    const row = document.querySelector('.problem-row.selected')
+    if (row) row.scrollIntoView({ block: 'nearest' })
+    await showWorkspace(entry.problem, entry.level)
+  }
+
+  function setSidebarCollapsed(collapsed) {
+    layout.classList.toggle('sidebar-collapsed', collapsed)
+    writeSaved(SIDEBAR_KEY, collapsed ? '1' : '0')
   }
 
   function fillLevelFilter() {
@@ -93,9 +133,43 @@
     fillLevelFilter()
     refreshList()
     statusRoot.textContent = `문제 폴더: ${settings.root}  (${scan.problemCount}문제)`
+    // 마지막에 연 문제가 아직 있으면 다시 연다.
+    await openProblem(window.problemNav.findById(scan.levels, readSaved(LAST_PROBLEM_KEY)))
   }
 
   searchInput.addEventListener('input', refreshList)
+  // 검색칸에서 Enter 를 누르면 맨 위 문제를 연다(Ctrl+P 빠른 이동).
+  searchInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      const first = window.problemNav.flatten(visibleLevels())[0]
+      if (first) openProblem(first)
+    }
+  })
+  setSidebarCollapsed(readSaved(SIDEBAR_KEY) === '1')
+  window.installShortcuts({
+    quickJump() {
+      setSidebarCollapsed(false)
+      searchInput.focus()
+      searchInput.select()
+    },
+    moveProblem(delta) {
+      openProblem(window.problemNav.neighbor(visibleLevels(), openedId, delta))
+    },
+    toggleSidebar() {
+      setSidebarCollapsed(!layout.classList.contains('sidebar-collapsed'))
+    },
+    copyAll() {
+      editorPane.copyAll()
+    },
+    restore() {
+      editorPane.restore()
+    },
+  })
+  api.getToolInfo().then((t) => {
+    const clean = (v) => (v ? String(v).replace(/^(javac|java|python|node)\s+/i, '') : '없음')
+    document.getElementById('status-tools').textContent = `Java ${clean(t.java)}  Python ${clean(t.python)}  Node ${clean(t.node)}`
+  })
   levelFilter.addEventListener('change', refreshList)
   document.getElementById('root-button').addEventListener('click', async () => {
     await editorPane.flush() // 폴더가 바뀌기 전에 편집 중인 내용을 원래 폴더에 저장해 둔다.

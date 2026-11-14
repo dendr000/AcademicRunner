@@ -5,6 +5,8 @@
   min-height: 0;
 }
 
+.layout.sidebar-collapsed .sidebar { display: none; }
+
 .sidebar {
   display: flex;
   flex-direction: column;
