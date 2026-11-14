@@ -77,6 +77,8 @@ module.exports = {
   readVersion,
   java: () => cached('java', () => locateJava()),
   python: () => cached('python', () => locatePython()),
+  // 앱 자체가 Node 를 품고 있다(Electron). ELECTRON_RUN_AS_NODE=1 로 실행하면 일반 Node 처럼 동작한다.
+  node: () => ({ node: process.execPath, version: 'Node ' + process.versions.node }),
   resetCache() {
     for (const k of Object.keys(cache)) delete cache[k]
   },

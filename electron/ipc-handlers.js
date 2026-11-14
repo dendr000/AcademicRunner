@@ -77,6 +77,7 @@ function registerIpcHandlers(getWindow, appId) {
   ipcMain.handle('tools:info', () => ({
     java: tools.java() ? tools.java().version : null,
     python: tools.python() ? tools.python().version : null,
+    node: tools.node().version,
   }))
 
   ipcMain.handle('clipboard:write', (_e, text) => {

@@ -24,7 +24,7 @@ AcademicRunner/
       process-runner.js  외부 프로그램 실행(시간 제한·출력 상한·중지)
       run-service.js   임시 폴더에서 컴파일·실행하고 정리
       tool-locator.js  javac/java/python 위치 찾기
-      runners/         언어별 러너(index.js 목록, java.js)
+      runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js)
   scripts/
     make-icon.cjs      icon.svg 에서 icon.ico 생성
     package-win.js     exe 패키징(허용 목록 방식)
@@ -49,6 +49,7 @@ AcademicRunner/
     autosaver.test.js       자동 저장 타이밍
     process-runner.test.js  프로세스 실행(제한·중지·입력)
     run-service-java.test.js  Java 컴파일·실행(실제 javac)
+    run-service-script.test.js  Python·JS 실행(실제 실행)
     run-summary.test.js     결과 요약
     settings-timeout.test.js  시간 제한 설정
 ```

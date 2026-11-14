@@ -1,4 +1,4 @@
-# 실행 (M3 Java, M4 Python·JS)
+(Python·JS 실제 실행, Python 이 없으면 Python 시험만 건너뜀), # 실행 (M3 Java, M4 Python·JS)
 
 ## 무엇인가
 
@@ -33,6 +33,20 @@
 3. `java -Dfile.encoding=UTF-8 -Dstdout.encoding=UTF-8 -Dstderr.encoding=UTF-8 -cp 임시폴더 클래스` 로 실행. 입력은 BOM 없는 UTF-8 로 직접 전달합니다.
 4. JDK 는 `JAVA_HOME` → `PATH` 순으로 찾고, 없으면 "JDK(javac)를 찾을 수 없습니다" 안내가 나옵니다.
 
+## Python 실행 방식
+
+- 임시 폴더에 파일을 쓰고 `python -X utf8 -u 파일` 로 실행합니다(UTF-8 모드, 출력 즉시 표시). `python.exe` 를 먼저 찾고 없으면 `py -3` 을 씁니다. Windows 스토어의 가짜 `python.exe` 는 버전 확인에서 걸러집니다.
+- 컴파일 확인(F6)은 `py_compile` 로 문법만 검사합니다.
+
+## JavaScript 실행 방식
+
+- 앱에 들어 있는 Node(Electron 을 `ELECTRON_RUN_AS_NODE=1` 로 실행)로 돕니다. 따로 Node 를 설치하지 않아도 됩니다.
+- 컴파일 확인(F6)은 `node --check` 로 문법만 검사합니다.
+
+## 문제 폴더에 다른 언어 파일 두기
+
+문제 폴더에 `Main.py`, `Main.js` 처럼 같은 규칙의 파일(`Main*` 입출력, `Solution*` 함수)을 두면 목록에 언어 표시가 늘고 편집기 위 탭으로 전환해 실행할 수 있습니다. 지금 `AcademicTest` 에는 Java 파일만 있습니다.
+
 ## 구성 용어 설명
 
 | 용어 | 뜻 |
@@ -53,4 +67,4 @@
 
 ## 시험
 
-`test/process-runner.test.js`, `test/run-service-java.test.js`(실제 javac 사용, JDK 가 없으면 건너뜀), `test/run-summary.test.js`, `test/settings-timeout.test.js`. 화면은 개발 실행에서 실제 키 입력(F5, F6, Shift+F5)으로 확인했습니다(실행·입력 기억·컴파일 오류·시간 초과·중지·함수 문제 거부·라이트/다크).
+`test/process-runner.test.js`, `test/run-service-java.test.js`(실제 javac 사용, JDK 가 없으면 건너뜀), `test/run-service-script.test.js`(Python·JS 실제 실행, Python 이 없으면 Python 시험만 건너뜀), `test/run-summary.test.js`, `test/settings-timeout.test.js`. 화면은 개발 실행에서 실제 키 입력(F5, F6, Shift+F5)으로 확인했습니다(실행·입력 기억·컴파일 오류·시간 초과·중지·함수 문제 거부·라이트/다크).
