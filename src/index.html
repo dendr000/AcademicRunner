@@ -8,23 +8,38 @@
   <title>AcademicRunner</title>
   <link rel="stylesheet" href="styles/tokens.css">
   <link rel="stylesheet" href="styles/app.css">
+  <link rel="stylesheet" href="styles/problem-list.css">
 </head>
 <body>
   <header class="topbar">
     <h1 class="app-name">AcademicRunner</h1>
     <span class="spacer"></span>
+    <button id="root-button" class="text-button" type="button" title="문제 풀이 폴더를 바꿉니다">폴더 선택</button>
     <button id="theme-button" class="icon-button" type="button" aria-label="테마 전환" title="테마 전환 (시스템 / 라이트 / 다크)">
       <span id="theme-icon" class="icon icon-monitor"></span>
     </button>
   </header>
-  <main class="empty-state">
-    <p class="empty-title">과제 풀이를 열어 실행하는 앱</p>
-    <p class="empty-sub">문제 목록과 편집기는 다음 단계에서 추가됩니다.</p>
-  </main>
+  <div class="layout">
+    <aside class="sidebar" aria-label="문제 목록">
+      <div class="sidebar-tools">
+        <input id="search-input" class="search-input" type="search" placeholder="번호나 제목으로 검색" aria-label="문제 검색" autocomplete="off">
+        <select id="level-filter" class="level-filter" aria-label="단계 필터"></select>
+      </div>
+      <div id="problem-list" class="problem-list"></div>
+    </aside>
+    <main id="workspace" class="workspace">
+      <p class="empty-title">과제 풀이를 열어 실행하는 앱</p>
+      <p class="empty-sub">왼쪽에서 문제를 고르세요.</p>
+    </main>
+  </div>
   <footer class="statusbar">
+    <span id="status-root">-</span>
+    <span class="spacer"></span>
     <span id="app-version">-</span>
   </footer>
   <script src="theme.js"></script>
+  <script src="ui/problem-filter.js"></script>
+  <script src="ui/problem-list.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>

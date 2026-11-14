@@ -1,6 +1,7 @@
 // Copyright (c) dendr000. MIT License.
-const { app, BrowserWindow, ipcMain, nativeTheme } = require('electron')
+const { app, BrowserWindow, nativeTheme } = require('electron')
 const path = require('node:path')
+const { registerIpcHandlers } = require('./ipc-handlers')
 
 const APP_ID = 'com.academicrunner.app'
 
@@ -40,12 +41,8 @@ function createWindow() {
   })
 }
 
-// 화면에 알려 줄 앱 정보만 허용 목록 IPC 로 내보낸다.
-ipcMain.handle('app:info', () => ({
-  name: app.getName(),
-  version: app.getVersion(),
-  appId: APP_ID,
-}))
+// 화면이 부를 수 있는 기능은 허용 목록 IPC 로만 등록한다.
+registerIpcHandlers(() => mainWindow, APP_ID)
 
 app.on('second-instance', () => {
   if (mainWindow) {
