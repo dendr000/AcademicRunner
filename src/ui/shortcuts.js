@@ -13,8 +13,8 @@
         else if (e.ctrlKey && !e.shiftKey && !e.altKey && key === 'b') actions.toggleSidebar()
         else if (e.ctrlKey && e.shiftKey && !e.altKey && key === 'c') actions.copyAll()
         else if (e.ctrlKey && e.shiftKey && !e.altKey && key === 'r') actions.restore()
-        else if (e.altKey && !e.ctrlKey && !e.shiftKey && key === 'ArrowUp') actions.moveProblem(-1)
-        else if (e.altKey && !e.ctrlKey && !e.shiftKey && key === 'ArrowDown') actions.moveProblem(1)
+        else if (e.ctrlKey && e.shiftKey && !e.altKey && key === 'ArrowUp') actions.moveProblem(-1)
+        else if (e.ctrlKey && e.shiftKey && !e.altKey && key === 'ArrowDown') actions.moveProblem(1)
         else handled = false
         if (handled) {
           e.preventDefault()
