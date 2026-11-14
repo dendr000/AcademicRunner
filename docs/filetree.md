@@ -11,6 +11,7 @@ AcademicRunner/
     features/problem-list.md  문제 목록·검색 설명
     features/editor.md        편집기·저장 설명
     features/run.md           실행 패널·러너 설명
+    features/test-cases.md    시험 케이스 설명
     troubleshooting.md        문제 해결 기록
     filetree.md               이 문서
   electron/
@@ -24,6 +25,8 @@ AcademicRunner/
       process-runner.js  외부 프로그램 실행(시간 제한·출력 상한·중지)
       run-service.js   임시 폴더에서 컴파일·실행하고 정리
       tool-locator.js  javac/java/python 위치 찾기
+      case-store.js    시험 케이스 저장(cases.json)
+      output-compare.js  기대/실제 출력 비교
       runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js)
   scripts/
     make-icon.cjs      icon.svg 에서 icon.ico 생성
@@ -39,6 +42,7 @@ AcademicRunner/
     ui/editor-pane.js     편집 영역(탭, 저장 상태, 복사·되돌리기, 충돌 안내)
     ui/monaco-loader.js   Monaco 불러오기
     ui/autosaver.js       자동 저장 조율(순수 로직)
+    ui/cases-panel.js     케이스 탭(목록·편집·전부 실행·결과)
     ui/run-panel.js       실행 패널(입력·출력 탭, 실행·중지·컴파일, 단축키)
     ui/run-summary.js     실행 결과 한 줄 요약(순수 함수)
   test/
@@ -51,5 +55,8 @@ AcademicRunner/
     run-service-java.test.js  Java 컴파일·실행(실제 javac)
     run-service-script.test.js  Python·JS 실행(실제 실행)
     run-summary.test.js     결과 요약
+    case-store.test.js      케이스 저장
+    output-compare.test.js  출력 비교
+    run-service-cases.test.js  케이스 전부 실행
     settings-timeout.test.js  시간 제한 설정
 ```

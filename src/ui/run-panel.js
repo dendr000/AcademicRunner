@@ -35,14 +35,18 @@
     const bar = el('div', 'run-bar')
     const tabInput = el('button', 'run-tab active', '입력')
     const tabOutput = el('button', 'run-tab', '출력')
-    for (const t of [tabInput, tabOutput]) t.type = 'button'
+    const tabCases = el('button', 'run-tab', '케이스')
+    for (const t of [tabInput, tabOutput, tabCases]) t.type = 'button'
     const runButton = el('button', 'text-button primary', '실행 (F5)')
     const stopButton = el('button', 'text-button', '중지 (Shift+F5)')
     const compileButton = el('button', 'text-button', '컴파일 확인 (F6)')
-    for (const b of [runButton, stopButton, compileButton]) b.type = 'button'
+    const saveCaseButton = el('button', 'text-button', '케이스로 저장')
+    saveCaseButton.title = '방금 실행한 입력과 출력을 시험 케이스로 저장합니다'
+    for (const b of [runButton, stopButton, compileButton, saveCaseButton]) b.type = 'button'
     stopButton.disabled = true
+    saveCaseButton.disabled = true
     const statusEl = el('span', 'run-status')
-    bar.append(tabInput, tabOutput, el('span', 'spacer'), statusEl, runButton, stopButton, compileButton)
+    bar.append(tabInput, tabOutput, tabCases, el('span', 'spacer'), statusEl, saveCaseButton, runButton, stopButton, compileButton)
 
     const inputArea = el('textarea', 'run-input')
     inputArea.spellcheck = false
@@ -51,20 +55,34 @@
     const output = el('pre', 'run-output')
     output.hidden = true
     output.setAttribute('aria-label', '실행 결과')
-    root.append(bar, inputArea, output)
+    const casesPanel = window.createCasesPanel(api, {
+      currentFile: () => hooks.currentFile(),
+      prepareRun: () => hooks.prepareRun(),
+      onStatus: (text, kind) => setStatus(text, kind),
+      showMessage: (text) => {
+        showTab('output')
+        clearOutput()
+        append(text + '\n', 'out-err')
+      },
+    })
+    casesPanel.element.hidden = true
+    root.append(bar, inputArea, output, casesPanel.element)
+    let lastRun = null // 마지막으로 성공한 실행의 { input, stdout } (케이스로 저장용)
 
     let currentProblemId = null
+    let lastInput = ''
     let activeRunId = null
     let running = false
     let timeoutSec = 10
     let unsubscribe = null
 
     function showTab(name) {
-      const isInput = name === 'input'
-      tabInput.classList.toggle('active', isInput)
-      tabOutput.classList.toggle('active', !isInput)
-      inputArea.hidden = !isInput
-      output.hidden = isInput
+      tabInput.classList.toggle('active', name === 'input')
+      tabOutput.classList.toggle('active', name === 'output')
+      tabCases.classList.toggle('active', name === 'cases')
+      inputArea.hidden = name !== 'input'
+      output.hidden = name !== 'output'
+      casesPanel.element.hidden = name !== 'cases'
     }
 
     function setRunning(value) {
@@ -113,6 +131,10 @@
       if (result && result.ok && result.phase === 'run' && result.stdout === '' && result.stderr === '') append('(출력 없음)\n', 'out-note')
       append('\n--- ' + summary.text + ' ---\n', summary.kind === 'ok' ? 'out-note-ok' : 'out-note-fail')
       setStatus(summary.text, summary.kind)
+      if (result && result.ok && result.phase === 'run') {
+        lastRun = { input: lastInput, stdout: result.stdout }
+        saveCaseButton.disabled = false
+      }
     }
 
     async function start(mode) {
@@ -133,6 +155,7 @@
       const settings = await api.getSettings()
       timeoutSec = settings.timeoutSec || 10
       const input = inputArea.value
+      lastInput = input
       writeSaved(INPUT_KEY_PREFIX + target.problem.id, input)
 
       showTab('output')
@@ -151,7 +174,7 @@
     }
 
     async function stop() {
-      if (!running) return
+      if (!running && !casesPanel.running) return
       setStatus('중지하는 중...', 'busy')
       await api.stopRun()
     }
@@ -160,6 +183,9 @@
     function onOpened(problem) {
       if (currentProblemId === problem.id) return
       currentProblemId = problem.id
+      lastRun = null
+      saveCaseButton.disabled = true
+      casesPanel.onOpened(problem)
       inputArea.value = readSaved(INPUT_KEY_PREFIX + problem.id)
       if (!running) {
         clearOutput()
@@ -173,6 +199,15 @@
     })
     tabInput.addEventListener('click', () => showTab('input'))
     tabOutput.addEventListener('click', () => showTab('output'))
+    tabCases.addEventListener('click', () => showTab('cases'))
+    saveCaseButton.addEventListener('click', async () => {
+      if (!lastRun) return
+      const c = await casesPanel.addFromRun(lastRun.input, lastRun.stdout)
+      if (c) {
+        showTab('cases')
+        setStatus('케이스로 저장했습니다. 기대 출력이 맞는지 확인하세요', 'ok')
+      }
+    })
     runButton.addEventListener('click', () => start('run'))
     compileButton.addEventListener('click', () => start('compile'))
     stopButton.addEventListener('click', stop)
@@ -185,8 +220,10 @@
         if (e.key === 'F5' && e.shiftKey) stop()
         else if (e.key === 'F5' || (e.key === 'Enter' && e.ctrlKey && !e.shiftKey && !e.altKey)) start('run')
         else if (e.key === 'F6') start('compile')
+        else if (e.key === 'F7') casesPanel.runAll().then(() => showTab('cases'))
         else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === '1') showTab('input')
         else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === '2') showTab('output')
+        else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === '3') showTab('cases')
         else handled = false
         if (handled) {
           e.preventDefault()
@@ -207,6 +244,7 @@
         return running
       },
       dispose() {
+        casesPanel.dispose()
         if (unsubscribe) unsubscribe()
       },
     }

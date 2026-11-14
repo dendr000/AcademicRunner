@@ -3,6 +3,7 @@
 const { ipcMain, dialog, app, clipboard } = require('electron')
 const { scanProblems } = require('./core/scanner')
 const files = require('./core/solution-files')
+const { createCaseStore } = require('./core/case-store')
 const tools = require('./core/tool-locator')
 const { createRunService } = require('./core/run-service')
 const { runners } = require('./core/runners')
@@ -10,6 +11,7 @@ const { createSettingsStore } = require('./core/settings')
 
 function registerIpcHandlers(getWindow, appId) {
   const settings = createSettingsStore(app.getPath('userData'))
+  const caseStore = createCaseStore(app.getPath('userData'))
 
   ipcMain.handle('app:info', () => ({
     name: app.getName(),
@@ -37,6 +39,12 @@ function registerIpcHandlers(getWindow, appId) {
     if (activeRun) return { ok: false, error: 'BUSY' }
     if (!request || typeof request !== 'object') return { ok: false, error: 'BAD_ARGUMENT' }
     const current = settings.get()
+    // 케이스 실행이면 저장된 케이스를 저장소에서 읽는다(화면이 보낸 내용은 믿지 않는다). caseIds 로 일부만 고를 수 있다.
+    let cases
+    if (request.useCases) {
+      const wanted = Array.isArray(request.caseIds) ? new Set(request.caseIds.filter((x) => typeof x === 'string')) : null
+      cases = caseStore.list(request.problemId).filter((c) => !wanted || wanted.has(c.id))
+    }
     const runId = ++runCounter
     const send = (payload) => {
       const win = getWindow()
@@ -50,6 +58,7 @@ function registerIpcHandlers(getWindow, appId) {
         mode: request.mode === 'compile' ? 'compile' : 'run',
         input: typeof request.input === 'string' ? request.input : '',
         timeoutMs: current.timeoutSec * 1000,
+        cases,
       },
       send,
     )
@@ -73,6 +82,10 @@ function registerIpcHandlers(getWindow, appId) {
     activeRun.job.stop()
     return { ok: true }
   })
+
+  ipcMain.handle('cases:list', (_e, problemId) => caseStore.list(problemId))
+  ipcMain.handle('cases:save', (_e, problemId, item) => caseStore.save(problemId, item))
+  ipcMain.handle('cases:remove', (_e, problemId, id) => caseStore.remove(problemId, id))
 
   ipcMain.handle('tools:info', () => ({
     java: tools.java() ? tools.java().version : null,

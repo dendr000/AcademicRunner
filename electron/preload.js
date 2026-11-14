@@ -12,7 +12,11 @@ contextBridge.exposeInMainWorld('runnerApi', {
   writeFile: (problemId, fileName, content, baseMtimeMs, force) =>
     ipcRenderer.invoke('files:write', problemId, fileName, content, baseMtimeMs, force === true),
   restoreOriginal: (problemId, fileName) => ipcRenderer.invoke('files:restoreOriginal', problemId, fileName),
+  // request.useCases 가 true 면 저장된 케이스를 전부(또는 caseIds 만) 실행한다.
   startRun: (request) => ipcRenderer.invoke('run:start', request),
+  listCases: (problemId) => ipcRenderer.invoke('cases:list', problemId),
+  saveCase: (problemId, item) => ipcRenderer.invoke('cases:save', problemId, item),
+  removeCase: (problemId, id) => ipcRenderer.invoke('cases:remove', problemId, id),
   stopRun: () => ipcRenderer.invoke('run:stop'),
   getToolInfo: () => ipcRenderer.invoke('tools:info'),
   // 실행 중 출력과 종료 결과가 온다. 해제 함수를 돌려준다.
