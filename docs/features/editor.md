@@ -29,7 +29,15 @@
 | 자료구조 | `arr` `arr2` `al` `hm` `hs` `dq` `pq` `sb` | `lc` `swap` | `map` `filter` `reduce` `swap` |
 | 기타 | `try` `tryf` `pint` `swap` `imp` | `try` `with` `imp` `swap` | `try` `swap` |
 
-전체 목록은 `src/ui/snippet-data.js` 에 있고, 줄을 추가하면 바로 쓸 수 있습니다. 본문 문법은 `$1`(이동 칸), `${1:i}`(기본값이 있는 칸), `$0`(마지막 커서 위치)입니다.
+## 점 자동 완성
+
+`sc.`, `num.` 처럼 점을 찍으면 그 변수의 메서드·속성이 뜹니다. `Tab` 또는 `Enter` 로 고르면 `nextInt()` 처럼 괄호까지 들어가고 커서가 괄호 안에 놓입니다. `length` 같은 속성은 괄호 없이 들어갑니다.
+
+- Java: 위쪽 코드에서 `Scanner sc`, `int[] num`, `String s`, `var sb = new StringBuilder()` 같은 선언을 읽어 종류를 짐작합니다. Scanner, String, StringBuilder, 배열, List·Map·Set·Deque, Math, Integer, Arrays, Collections, Character, System.out 을 지원합니다. 종류를 모르면 자주 쓰는 목록을 보여 줍니다.
+- Python, JavaScript: 종류를 짐작하지 않고 가벼운 공통 목록만 보여 줍니다.
+- 한계: 언어 서버가 아니라서 메서드 체인(`a.b().c`)이나 필드의 종류는 알지 못합니다.
+
+전체 스니펫 목록은 `src/ui/snippet-data.js` 에 있고, 줄을 추가하면 바로 쓸 수 있습니다. 본문 문법은 `$1`(이동 칸), `${1:i}`(기본값이 있는 칸), `$0`(마지막 커서 위치)입니다.
 
 상태 표시: `저장됨` / `저장 대기 중...` / `저장 중...` / `저장 실패`.
 
@@ -62,6 +70,7 @@
 
 - `electron/core/solution-files.js` 읽기·저장·되돌리기·경로 검사
 - `src/ui/editor-pane.js` 편집 영역(탭, 상태, 버튼, 충돌 안내), `src/ui/monaco-loader.js` 편집기 불러오기
+- `src/ui/member-data.js` 점 자동 완성 목록과 종류 짐작, `src/ui/member-completion.js` Monaco 에 등록
 - `src/ui/snippet-data.js` 스니펫 목록(순수 데이터), `src/ui/snippets.js` Monaco 에 등록
 - `scripts/vendor-monaco.js` Monaco 복사(언어 서비스·번역·소스맵 제외, 약 5MB)
 

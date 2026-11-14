@@ -1,0 +1,151 @@
+// Copyright (c) dendr000. MIT License.
+// "변수." 뒤에 나오는 메서드·속성 제안 목록과, 선언을 읽어 변수 타입을 짐작하는 순수 함수.
+// 언어 서비스(진짜 타입 분석)가 없으므로 같은 파일 안의 선언(`Scanner sc`, `int[] num`)을 정규식으로 읽는다.
+// 항목: [이름, 설명, 괄호 안 자리표시(없으면 '' = 빈 괄호, null = 괄호 없는 속성)]
+(function (root) {
+  const m = (name, detail, params) => ({ name, detail, params: params === undefined ? '' : params })
+
+  const STRING = [
+    m('length', '글자 수', ''), m('charAt', '위치의 글자', '${1:i}'), m('substring', '일부 잘라내기', '${1:from}, ${2:to}'),
+    m('indexOf', '처음 위치', '${1:s}'), m('lastIndexOf', '마지막 위치', '${1:s}'), m('equals', '내용이 같은가', '${1:other}'),
+    m('equalsIgnoreCase', '대소문자 무시 비교', '${1:other}'), m('compareTo', '사전순 비교', '${1:other}'), m('contains', '포함하는가', '${1:s}'),
+    m('startsWith', '시작이 같은가', '${1:s}'), m('endsWith', '끝이 같은가', '${1:s}'), m('isEmpty', '비었는가'), m('isBlank', '공백뿐인가'),
+    m('toUpperCase', '대문자로'), m('toLowerCase', '소문자로'), m('trim', '앞뒤 공백 제거'), m('split', '나누기', '${1:" "}'),
+    m('replace', '바꾸기', '${1:old}, ${2:new}'), m('toCharArray', '글자 배열로'), m('repeat', '반복', '${1:n}'), m('concat', '이어 붙이기', '${1:s}'),
+    m('chars', '글자 스트림'), m('format', '서식 문자열(static)', '${1:"%d"}, ${2}'), m('valueOf', '문자열로 바꾸기(static)', '${1:x}'),
+  ]
+  const SCANNER = [
+    m('nextInt', '정수 읽기'), m('nextLong', 'long 읽기'), m('nextDouble', '실수 읽기'), m('nextBoolean', '참/거짓 읽기'),
+    m('next', '단어 하나 읽기'), m('nextLine', '한 줄 읽기'), m('hasNext', '읽을 단어가 있는가'), m('hasNextInt', '읽을 정수가 있는가'),
+    m('hasNextLine', '읽을 줄이 있는가'), m('close', '닫기'),
+  ]
+  const BUILDER = [
+    m('append', '뒤에 붙이기', '${1:x}'), m('insert', '중간에 넣기', '${1:index}, ${2:x}'), m('reverse', '뒤집기'), m('toString', '문자열로'),
+    m('length', '글자 수'), m('charAt', '위치의 글자', '${1:i}'), m('deleteCharAt', '글자 지우기', '${1:i}'), m('delete', '구간 지우기', '${1:from}, ${2:to}'),
+    m('setLength', '길이 바꾸기', '${1:n}'), m('setCharAt', '글자 바꾸기', '${1:i}, ${2:c}'), m('indexOf', '처음 위치', '${1:s}'),
+  ]
+  const LIST = [
+    m('add', '추가', '${1:x}'), m('get', '위치의 값', '${1:i}'), m('set', '값 바꾸기', '${1:i}, ${2:x}'), m('remove', '지우기', '${1:x}'),
+    m('size', '개수'), m('isEmpty', '비었는가'), m('contains', '포함하는가', '${1:x}'), m('indexOf', '처음 위치', '${1:x}'), m('clear', '모두 지우기'),
+    m('addAll', '모두 추가', '${1:other}'), m('sort', '정렬', '${1:null}'), m('forEach', '반복', '${1:x -> }'), m('stream', '스트림'),
+    m('subList', '구간', '${1:from}, ${2:to}'), m('toArray', '배열로'), m('iterator', '반복자'),
+  ]
+  const MAP = [
+    m('put', '넣기', '${1:key}, ${2:value}'), m('get', '값 얻기', '${1:key}'), m('getOrDefault', '없으면 기본값', '${1:key}, ${2:def}'),
+    m('containsKey', '키가 있는가', '${1:key}'), m('containsValue', '값이 있는가', '${1:value}'), m('remove', '지우기', '${1:key}'),
+    m('size', '개수'), m('isEmpty', '비었는가'), m('keySet', '키 모음'), m('values', '값 모음'), m('entrySet', '키-값 모음'),
+    m('putIfAbsent', '없을 때만 넣기', '${1:key}, ${2:value}'), m('merge', '합치기', '${1:key}, ${2:value}, ${3:Integer::sum}'), m('clear', '모두 지우기'),
+    m('forEach', '반복', '${1:(k, v) -> }'),
+  ]
+  const SET = [
+    m('add', '추가', '${1:x}'), m('contains', '포함하는가', '${1:x}'), m('remove', '지우기', '${1:x}'), m('size', '개수'), m('isEmpty', '비었는가'),
+    m('clear', '모두 지우기'), m('addAll', '모두 추가', '${1:other}'), m('retainAll', '교집합만 남기기', '${1:other}'), m('iterator', '반복자'),
+    m('first', '가장 작은 값(TreeSet)'), m('last', '가장 큰 값(TreeSet)'),
+  ]
+  const DEQUE = [
+    m('add', '추가', '${1:x}'), m('offer', '추가', '${1:x}'), m('poll', '꺼내기(없으면 null)'), m('peek', '맨 앞 보기'), m('push', '스택에 넣기', '${1:x}'),
+    m('pop', '스택에서 꺼내기'), m('addFirst', '앞에 넣기', '${1:x}'), m('addLast', '뒤에 넣기', '${1:x}'), m('pollFirst', '앞에서 꺼내기'),
+    m('pollLast', '뒤에서 꺼내기'), m('peekFirst', '맨 앞 보기'), m('peekLast', '맨 뒤 보기'), m('size', '개수'), m('isEmpty', '비었는가'), m('clear', '모두 지우기'),
+  ]
+  const ARRAY = [m('length', '배열 길이', null), m('clone', '복사')]
+  const MATH = [
+    m('max', '큰 값', '${1:a}, ${2:b}'), m('min', '작은 값', '${1:a}, ${2:b}'), m('abs', '절댓값', '${1:x}'), m('pow', '거듭제곱', '${1:a}, ${2:b}'),
+    m('sqrt', '제곱근', '${1:x}'), m('floor', '내림', '${1:x}'), m('ceil', '올림', '${1:x}'), m('round', '반올림', '${1:x}'), m('random', '난수'),
+    m('floorMod', '나머지(음수 안전)', '${1:a}, ${2:b}'), m('log', '자연로그', '${1:x}'), m('PI', '원주율', null),
+  ]
+  const INTEGER = [
+    m('parseInt', '문자열을 정수로', '${1:s}'), m('valueOf', '정수 객체로', '${1:x}'), m('toString', '문자열로', '${1:n}'), m('toBinaryString', '2진수 문자열', '${1:n}'),
+    m('max', '큰 값', '${1:a}, ${2:b}'), m('min', '작은 값', '${1:a}, ${2:b}'), m('compare', '비교', '${1:a}, ${2:b}'), m('bitCount', '1 비트 수', '${1:n}'),
+    m('MAX_VALUE', '최댓값', null), m('MIN_VALUE', '최솟값', null),
+  ]
+  const ARRAYS = [
+    m('sort', '정렬', '${1:arr}'), m('toString', '문자열로', '${1:arr}'), m('deepToString', '다차원 문자열로', '${1:arr}'), m('fill', '채우기', '${1:arr}, ${2:value}'),
+    m('copyOf', '복사', '${1:arr}, ${2:n}'), m('copyOfRange', '구간 복사', '${1:arr}, ${2:from}, ${3:to}'), m('asList', '리스트로', '${1:arr}'),
+    m('equals', '같은가', '${1:a}, ${2:b}'), m('stream', '스트림', '${1:arr}'), m('binarySearch', '이진 탐색', '${1:arr}, ${2:key}'),
+  ]
+  const COLLECTIONS = [
+    m('sort', '정렬', '${1:list}'), m('reverse', '뒤집기', '${1:list}'), m('max', '최댓값', '${1:c}'), m('min', '최솟값', '${1:c}'), m('swap', '두 값 바꾸기', '${1:list}, ${2:i}, ${3:j}'),
+    m('reverseOrder', '내림차순 비교자'), m('unmodifiableList', '수정 불가 리스트', '${1:list}'), m('frequency', '개수 세기', '${1:c}, ${2:x}'),
+  ]
+  const PRINT = [m('println', '한 줄 출력', '${1}'), m('print', '출력', '${1}'), m('printf', '서식 출력', '${1:"%d%n"}, ${2}'), m('flush', '비우기')]
+  const SYSTEM = [m('out', '표준 출력', null), m('in', '표준 입력', null), m('err', '오류 출력', null), m('currentTimeMillis', '현재 시각(ms)'), m('nanoTime', '나노초 시각'), m('exit', '종료', '${1:0}'), m('arraycopy', '배열 복사', '${1:src}, ${2:0}, ${3:dest}, ${4:0}, ${5:n}')]
+  const CHARACTER = [
+    m('isDigit', '숫자인가', '${1:c}'), m('isLetter', '글자인가', '${1:c}'), m('isUpperCase', '대문자인가', '${1:c}'), m('isLowerCase', '소문자인가', '${1:c}'),
+    m('toUpperCase', '대문자로', '${1:c}'), m('toLowerCase', '소문자로', '${1:c}'), m('getNumericValue', '숫자 값', '${1:c}'), m('isWhitespace', '공백인가', '${1:c}'),
+  ]
+  const OBJECT = [m('toString', '문자열로'), m('equals', '같은가', '${1:other}'), m('hashCode', '해시 값'), m('getClass', '클래스 정보')]
+
+  // 변수 타입(제네릭 제외한 이름) -> 목록
+  const BY_TYPE = {
+    String: STRING, Scanner: SCANNER, StringBuilder: BUILDER, StringBuffer: BUILDER,
+    List: LIST, ArrayList: LIST, LinkedList: [...LIST, ...DEQUE], Collection: LIST, Vector: LIST,
+    Map: MAP, HashMap: MAP, TreeMap: MAP, LinkedHashMap: MAP,
+    Set: SET, HashSet: SET, TreeSet: SET, LinkedHashSet: SET,
+    Deque: DEQUE, ArrayDeque: DEQUE, Queue: DEQUE, Stack: [...DEQUE, ...LIST], PriorityQueue: DEQUE,
+    PrintStream: PRINT,
+  }
+  // 변수가 아니라 클래스 이름 자체에 붙는 것(static)
+  const STATIC = { Math: MATH, Integer: INTEGER, Long: INTEGER, Double: INTEGER, Arrays: ARRAYS, Collections: COLLECTIONS, System: SYSTEM, String: STRING, Character: CHARACTER, 'System.out': PRINT, 'System.err': PRINT }
+
+  const PY_STR = ['upper', 'lower', 'strip', 'split', 'join', 'replace', 'find', 'startswith', 'endswith', 'isdigit', 'isalpha', 'format', 'count', 'index', 'lstrip', 'rstrip', 'title', 'zfill']
+  const PY_LIST = ['append', 'extend', 'insert', 'remove', 'pop', 'sort', 'reverse', 'index', 'count', 'copy', 'clear']
+  const PY_DICT = ['keys', 'values', 'items', 'get', 'pop', 'update', 'setdefault', 'clear', 'copy']
+  const PY_SET = ['add', 'discard', 'union', 'intersection', 'difference', 'update']
+  const JS_ARRAY = ['push', 'pop', 'shift', 'unshift', 'slice', 'splice', 'map', 'filter', 'reduce', 'forEach', 'find', 'findIndex', 'includes', 'indexOf', 'join', 'sort', 'reverse', 'concat', 'some', 'every', 'flat', 'fill', 'length']
+  const JS_STRING = ['length', 'charAt', 'charCodeAt', 'substring', 'slice', 'indexOf', 'includes', 'split', 'trim', 'toUpperCase', 'toLowerCase', 'replace', 'startsWith', 'endsWith', 'repeat', 'padStart', 'padEnd']
+  const JS_MATH = ['max', 'min', 'abs', 'floor', 'ceil', 'round', 'sqrt', 'pow', 'random', 'PI']
+
+  const dedupe = (names, detail) => [...new Set(names)].map((name) => ({ name, detail, params: name === 'length' || name === 'PI' ? null : '' }))
+  const GENERIC = {
+    python: dedupe([...PY_STR, ...PY_LIST, ...PY_DICT, ...PY_SET], '메서드'),
+    javascript: dedupe([...JS_ARRAY, ...JS_STRING], '메서드'),
+  }
+  const JS_STATIC = { Math: dedupe(JS_MATH, 'Math'), console: dedupe(['log', 'error', 'warn', 'table'], 'console'), JSON: dedupe(['stringify', 'parse'], 'JSON'), Object: dedupe(['keys', 'values', 'entries', 'assign'], 'Object'), Number: dedupe(['parseInt', 'parseFloat', 'isInteger', 'MAX_SAFE_INTEGER'], 'Number') }
+  const PY_STATIC = { math: dedupe(['sqrt', 'floor', 'ceil', 'pow', 'gcd', 'pi', 'log', 'factorial'], 'math'), sys: dedupe(['stdin', 'stdout', 'exit', 'setrecursionlimit'], 'sys') }
+
+  const IDENT = '[A-Za-z_$][\\w$]*'
+
+  // 선언을 읽어 변수 name 의 타입 이름을 돌려준다. 못 찾으면 null.
+  //   `Scanner sc` -> 'Scanner', `int[] num` / `int num[]` -> 'array', `List<Integer> list` -> 'List', `var sc = new Scanner(..)` -> 'Scanner'
+  function inferJavaType(source, name) {
+    const code = source.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/\/\/[^\n]*/g, ' ')
+    const esc = name.replace(/[$]/g, '\\$')
+    const arrayDecl = new RegExp('\\b' + IDENT + '(?:<[^;=()]*>)?\\s*(?:\\[\\s*\\]\\s*)+' + esc + '\\b').test(code) || new RegExp('\\b' + IDENT + '\\s+' + esc + '\\s*\\[').test(code)
+    if (arrayDecl) return 'array'
+    const varNew = new RegExp('\\bvar\\s+' + esc + '\\s*=\\s*new\\s+(' + IDENT + ')').exec(code)
+    if (varNew) return varNew[1]
+    const typed = new RegExp('\\b(' + IDENT + ')(?:<[^;=()]*>)?\\s+' + esc + '\\s*(?=[=;,):])').exec(code)
+    if (typed && !['return', 'new', 'else', 'case', 'throw'].includes(typed[1])) return typed[1]
+    return null
+  }
+
+  // lineBeforeDot: 커서 앞 한 줄에서 마지막 '.' 앞까지(예: "int a = sc"). 받는 식(수신자)을 뽑는다.
+  function receiverOf(lineBeforeDot) {
+    const dotted = new RegExp('(' + IDENT + '(?:\\.' + IDENT + ')?)\\s*$').exec(lineBeforeDot)
+    return dotted ? dotted[1] : null
+  }
+
+  // 반환: [{ name, detail, params }]
+  function membersFor(language, source, receiver) {
+    if (!receiver) return []
+    if (language === 'java') {
+      if (STATIC[receiver] && !hasDeclaration(source, receiver)) return STATIC[receiver]
+      const type = inferJavaType(source, receiver)
+      if (type === 'array') return ARRAY
+      if (type && BY_TYPE[type]) return BY_TYPE[type]
+      if (type) return OBJECT
+      return []
+    }
+    if (language === 'python') return PY_STATIC[receiver] || GENERIC.python
+    if (language === 'javascript') return JS_STATIC[receiver] || GENERIC.javascript
+    return []
+  }
+
+  function hasDeclaration(source, name) {
+    return new RegExp('\\b' + IDENT + '(?:<[^;=()]*>)?(?:\\[\\s*\\])*\\s+' + name.replace(/[$.]/g, '\\$&') + '\\s*[=;,)]').test(source)
+  }
+
+  const api = { inferJavaType, receiverOf, membersFor, BY_TYPE, STATIC }
+  if (typeof module !== 'undefined' && module.exports) module.exports = api
+  else root.memberData = api
+})(typeof window !== 'undefined' ? window : globalThis)

@@ -203,6 +203,7 @@
         return false
       }
       window.registerSnippets(monaco)
+      window.registerMemberCompletion(monaco)
       editor = monaco.editor.create(host, {
         theme: themeName(),
         automaticLayout: true,

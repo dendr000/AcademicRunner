@@ -49,6 +49,8 @@ AcademicRunner/
     ui/run-summary.js     실행 결과 한 줄 요약(순수 함수)
     ui/snippet-data.js    단축 입력(스니펫) 목록(순수 데이터)
     ui/snippets.js        스니펫을 편집기에 등록
+    ui/member-data.js     점 자동 완성 목록과 변수 종류 짐작(순수 함수)
+    ui/member-completion.js 점 자동 완성을 편집기에 등록
     ui/problem-nav.js     이전/다음 문제 계산(순수 함수)
     ui/shortcuts.js       앱 전체 단축키
   test/
@@ -69,6 +71,7 @@ AcademicRunner/
     run-service-function.test.js  함수 문제 실행
     problem-nav.test.js     이전/다음 문제 계산
     snippet-data.test.js    스니펫 목록 형식
+    member-data.test.js     변수 종류 짐작·점 자동 완성 목록
     interactive-input.test.js  실시간 입력(콘솔처럼)
     settings-timeout.test.js  시간 제한 설정
 ```
