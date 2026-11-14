@@ -9,6 +9,7 @@
   --accent: #2563eb;
   --accent-contrast: #ffffff;
   --hover: #e9edf2;
+  --danger: #c62828;
 }
 
 :root[data-theme="dark"] {
@@ -20,4 +21,5 @@
   --accent: #6b9bff;
   --accent-contrast: #0f1115;
   --hover: #2c323c;
+  --danger: #ff6b6b;
 }

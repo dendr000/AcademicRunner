@@ -15,3 +15,6 @@ release-packager/
 *.pem
 *.key
 *.pfx
+
+# 편집기 부품(npm run vendor 로 다시 만든다)
+src/vendor/

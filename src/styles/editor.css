@@ -1,0 +1,74 @@
+/* Copyright (c) dendr000. MIT License. */
+.workspace.has-editor {
+  display: block;
+  padding: 0;
+}
+
+.editor-pane {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 42px;
+  padding: 6px 12px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+}
+
+.editor-title {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 4px;
+}
+
+.editor-tab {
+  height: 26px;
+  padding: 0 10px;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  cursor: pointer;
+}
+
+.editor-tab.active {
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.editor-status {
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.editor-status[data-state="error"] { color: var(--danger); }
+
+.editor-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--hover);
+  border-bottom: 1px solid var(--border);
+}
+
+.editor-banner[hidden] { display: none; }
+.banner-text { flex: 1; }
+
+.editor-host {
+  flex: 1;
+  min-height: 0;
+}

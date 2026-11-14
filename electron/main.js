@@ -1,5 +1,5 @@
 // Copyright (c) dendr000. MIT License.
-const { app, BrowserWindow, nativeTheme } = require('electron')
+const { app, BrowserWindow, nativeTheme, ipcMain } = require('electron')
 const path = require('node:path')
 const { registerIpcHandlers } = require('./ipc-handlers')
 
@@ -36,7 +36,25 @@ function createWindow() {
   })
   mainWindow.setMenuBarVisibility(false)
   mainWindow.loadFile(path.join(__dirname, '..', 'src', 'index.html'))
+  // 닫기 전에 화면에 "저장하라"고 알리고, 저장이 끝났다는 답을 받은 뒤 닫는다(자동 저장 대기 중인 내용을 잃지 않게).
+  // 답이 없어도 3초 뒤에는 닫는다.
+  let closeApproved = false
+  let closeTimer = null
+  const approveClose = () => {
+    closeApproved = true
+    clearTimeout(closeTimer)
+    if (mainWindow) mainWindow.close()
+  }
+  mainWindow.on('close', (event) => {
+    if (closeApproved) return
+    event.preventDefault()
+    if (closeTimer) return
+    closeTimer = setTimeout(approveClose, 3000)
+    mainWindow.webContents.send('app:before-close')
+  })
+  ipcMain.once('app:close-ready', approveClose)
   mainWindow.on('closed', () => {
+    clearTimeout(closeTimer)
     mainWindow = null
   })
 }

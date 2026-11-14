@@ -9,17 +9,19 @@
 
   let scan = null
 
-  function showWorkspace(problem, level) {
-    workspace.replaceChildren()
-    const title = document.createElement('p')
-    title.className = 'empty-title'
-    title.textContent = `Lv${level.level} ${String(problem.number).padStart(2, '0')}. ${problem.title}`
-    const sub = document.createElement('p')
-    sub.className = 'empty-sub'
-    sub.textContent = problem.files.length > 0
-      ? '파일: ' + problem.files.map((f) => f.name).join(', ') + ' (편집기는 다음 단계에서 추가됩니다)'
-      : '이 문제 폴더에는 풀이 파일이 없습니다.'
-    workspace.append(title, sub)
+  const editorPane = window.createEditorPane(workspace, api)
+  let openedId = null // 지금 편집기에 열려 있는 문제
+
+  // 문제를 연다. 저장하지 못한 변경 때문에 사용자가 이동을 취소하면 목록 선택을 원래대로 돌린다.
+  async function showWorkspace(problem, level) {
+    workspace.classList.add('has-editor')
+    const moved = await editorPane.open(problem, level)
+    if (moved) {
+      openedId = problem.id
+    } else {
+      list.select(openedId)
+      refreshList()
+    }
   }
 
   const list = window.createProblemList(document.getElementById('problem-list'), showWorkspace)
@@ -56,6 +58,8 @@
   }
 
   function showPlaceholder() {
+    workspace.classList.remove('has-editor')
+    openedId = null
     workspace.replaceChildren()
     const title = document.createElement('p')
     title.className = 'empty-title'
@@ -85,8 +89,20 @@
   searchInput.addEventListener('input', refreshList)
   levelFilter.addEventListener('change', refreshList)
   document.getElementById('root-button').addEventListener('click', async () => {
+    await editorPane.flush() // 폴더가 바뀌기 전에 편집 중인 내용을 원래 폴더에 저장해 둔다.
     const result = await api.chooseRoot()
-    if (result.changed) await load()
+    if (result.changed) {
+      editorPane.discard()
+      await load()
+    }
+  })
+
+  api.onBeforeClose(async () => {
+    try {
+      await editorPane.flush()
+    } finally {
+      api.closeReady()
+    }
   })
 
   api.getAppInfo().then((info) => {
