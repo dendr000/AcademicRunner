@@ -151,25 +151,37 @@
   document.getElementById('sidebar-button').addEventListener('click', () => {
     setSidebarCollapsed(!layout.classList.contains('sidebar-collapsed'))
   })
-  window.installShortcuts({
+  // 동작 등록: 단축키와 메뉴바가 같은 동작을 부른다(어떤 키에 묶을지는 keymap.js).
+  const keymapDialog = window.createKeymapDialog()
+  window.appActions.registerActions({
+    chooseRoot: () => document.getElementById('root-button').click(),
+    save: () => editorPane.flush(),
+    copyAll: () => editorPane.copyAll(),
+    restore: () => editorPane.restore(),
+    quit: () => window.close(), // 닫기 전에 저장하는 기존 흐름(onBeforeClose)을 그대로 탄다
+    toggleSidebar: () => setSidebarCollapsed(!layout.classList.contains('sidebar-collapsed')),
+    toggleTheme: () => document.getElementById('theme-button').click(),
+    fontBigger: () => editorPane.changeFontSize(1),
+    fontSmaller: () => editorPane.changeFontSize(-1),
+    fontReset: () => editorPane.changeFontSize(0),
     quickJump() {
       setSidebarCollapsed(false)
       searchInput.focus()
       searchInput.select()
     },
-    moveProblem(delta) {
-      openProblem(window.problemNav.neighbor(visibleLevels(), openedId, delta))
-    },
-    toggleSidebar() {
-      setSidebarCollapsed(!layout.classList.contains('sidebar-collapsed'))
-    },
-    copyAll() {
-      editorPane.copyAll()
-    },
-    restore() {
-      editorPane.restore()
-    },
+    prevProblem: () => openProblem(window.problemNav.neighbor(visibleLevels(), openedId, -1)),
+    nextProblem: () => openProblem(window.problemNav.neighbor(visibleLevels(), openedId, 1)),
+    openKeymap: () => keymapDialog.open(),
   })
+  window.installShortcuts()
+  window.createMenubar(document.body)
+  const sidebarButton = document.getElementById('sidebar-button')
+  const refreshSidebarTitle = () => {
+    const chord = window.keymap.get('toggleSidebar')
+    sidebarButton.title = chord ? '문제 목록 접기·펴기 (' + window.keymapLib.displayChord(chord) + ')' : '문제 목록 접기·펴기'
+  }
+  window.keymap.onChange(refreshSidebarTitle)
+  refreshSidebarTitle()
   api.getToolInfo().then((t) => {
     const clean = (v) => (v ? String(v).replace(/^(javac|java|python|node)\s+/i, '') : '없음')
     document.getElementById('status-tools').textContent = `Java ${clean(t.java)}  Python ${clean(t.python)}  Node ${clean(t.node)}`

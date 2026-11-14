@@ -218,7 +218,6 @@
         wordBasedSuggestions: 'off', // 같은 파일 이름 제안은 member-completion.js 가 직접 한다
         tabCompletion: 'on', // 단축 입력을 친 뒤 Tab 으로 펼침
       })
-      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => { saver.flush() })
       new MutationObserver(() => monaco.editor.setTheme(themeName())).observe(document.documentElement, {
         attributes: true,
         attributeFilter: ['data-theme'],
@@ -298,6 +297,12 @@
         return openFile(problem, level, problem.files[0])
       },
       flush: () => saver.flush(),
+      // 글자 크기: delta 만큼 키우거나(양수) 줄이고(음수), 0 이면 기본(14)으로. 8~40 으로 제한한다.
+      changeFontSize(delta) {
+        if (!editor) return
+        const size = delta === 0 ? 14 : Math.min(40, Math.max(8, editor.getOption(monaco.editor.EditorOption.fontSize) + delta))
+        editor.updateOptions({ fontSize: size })
+      },
       // 지금 열려 있는 파일. 실행 패널이 무엇을 실행할지 알아내는 데 쓴다.
       currentFile: () => (current ? { problem: current.problem, level: current.level, file: current.file } : null),
       // 실행해도 되는 상태인가: 저장하지 못한 변경이나 충돌이 있으면 디스크의 옛 파일을 실행하게 되므로 막는다.

@@ -26,8 +26,16 @@
     const toolbar = el('div', 'cases-toolbar')
     const addButton = el('button', 'text-button', '케이스 추가')
     const runAllButton = el('button', 'text-button primary', '전부 실행')
-    runAllButton.appendChild(el('span', 'hint', ' (F7)'))
-    runAllButton.title = '전부 실행 (F7)'
+    const runAllHint = el('span', 'hint')
+    runAllButton.appendChild(runAllHint)
+    const refreshRunAllHint = () => {
+      const chord = window.keymap.get('runCases')
+      const text = chord ? '(' + window.keymapLib.displayChord(chord) + ')' : ''
+      runAllHint.textContent = text ? ' ' + text : ''
+      runAllButton.title = text ? '전부 실행 ' + text : '전부 실행'
+    }
+    refreshRunAllHint()
+    window.keymap.onChange(refreshRunAllHint)
     for (const b of [addButton, runAllButton]) b.type = 'button'
     const summary = el('span', 'cases-summary')
     toolbar.append(addButton, runAllButton, summary)

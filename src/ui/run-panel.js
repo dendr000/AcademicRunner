@@ -38,15 +38,26 @@
     const tabCases = el('button', 'run-tab', '케이스')
     for (const t of [tabInput, tabOutput, tabCases]) t.type = 'button'
     // 단축키 안내(hint)는 패널이 좁으면 CSS 로 숨겨 버튼이 줄바꿈되지 않게 한다.
-    const labeled = (className, label, hint) => {
+    // 안내하는 키는 사용자가 바꿀 수 있으므로 단축키 표(window.keymap)에서 읽고, 바뀌면 다시 쓴다.
+    const hintRefreshers = []
+    const labeled = (className, label, actionId) => {
       const b = el('button', className, label)
-      b.appendChild(el('span', 'hint', ' ' + hint))
-      b.title = label + ' ' + hint
+      const hint = el('span', 'hint')
+      b.appendChild(hint)
+      const refresh = () => {
+        const chord = window.keymap.get(actionId)
+        const text = chord ? '(' + window.keymapLib.displayChord(chord) + ')' : ''
+        hint.textContent = text ? ' ' + text : ''
+        b.title = text ? label + ' ' + text : label
+      }
+      hintRefreshers.push(refresh)
+      refresh()
       return b
     }
-    const runButton = labeled('text-button primary', '실행', '(F5)')
-    const stopButton = labeled('text-button', '중지', '(Shift+F5)')
-    const compileButton = labeled('text-button', '컴파일 확인', '(F6)')
+    window.keymap.onChange(() => hintRefreshers.forEach((fn) => fn()))
+    const runButton = labeled('text-button primary', '실행', 'run')
+    const stopButton = labeled('text-button', '중지', 'stop')
+    const compileButton = labeled('text-button', '컴파일 확인', 'compile')
     const saveCaseButton = el('button', 'text-button', '케이스로 저장')
     saveCaseButton.title = '방금 실행한 입력과 출력을 시험 케이스로 저장합니다'
     for (const b of [runButton, stopButton, compileButton, saveCaseButton]) b.type = 'button'
@@ -291,26 +302,17 @@
       }
     })
 
-    // 편집기(Monaco)가 Ctrl+Enter 등을 먼저 가져가므로 캡처 단계에서 가로챈다.
-    document.addEventListener(
-      'keydown',
-      (e) => {
-        let handled = true
-        if (e.key === 'F5' && e.shiftKey) stop()
-        else if (e.key === 'F5' || (e.key === 'Enter' && e.ctrlKey && !e.shiftKey && !e.altKey)) start('run')
-        else if (e.key === 'F6') start('compile')
-        else if (e.key === 'F7') casesPanel.runAll().then(() => showTab('cases'))
-        else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === '1') showTab('input')
-        else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === '2') showTab('output')
-        else if (e.ctrlKey && !e.shiftKey && !e.altKey && e.key === '3') showTab('cases')
-        else handled = false
-        if (handled) {
-          e.preventDefault()
-          e.stopPropagation()
-        }
-      },
-      true,
-    )
+    // 실행 관련 동작을 단축키·메뉴 등록소에 넘긴다. 어떤 키에 묶을지는 keymap.js 가 정한다.
+    window.appActions.registerActions({
+      run: () => start('run'),
+      runAlt: () => start('run'),
+      stop: () => stop(),
+      compile: () => start('compile'),
+      runCases: () => casesPanel.runAll().then(() => showTab('cases')),
+      tabInput: () => showTab('input'),
+      tabOutput: () => showTab('output'),
+      tabCases: () => showTab('cases'),
+    })
 
     unsubscribe = api.onRunEvent(onEvent)
 
