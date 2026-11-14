@@ -84,10 +84,39 @@
 .run-input:focus-visible { box-shadow: inset 0 0 0 2px var(--accent); }
 
 .out-err { color: var(--danger); }
+.out-input { color: var(--accent); }
 .out-compile { color: var(--danger); }
 .out-note { color: var(--text-muted); }
 .out-note-ok { color: var(--success); }
 .out-note-fail { color: var(--danger); }
+
+/* 실시간 입력줄 */
+.run-live {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+}
+
+.run-live[hidden] { display: none; }
+
+.run-live-input {
+  flex: 1;
+  min-width: 0;
+  height: 28px;
+  padding: 0 8px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: D2Coding, Consolas, "Malgun Gothic", monospace;
+  font-size: 13px;
+}
+
+.run-live-input:focus-visible { outline: 2px solid var(--accent); outline-offset: 0; }
+.run-live .text-button { white-space: nowrap; }
 
 /* 케이스 탭 */
 .cases-panel {

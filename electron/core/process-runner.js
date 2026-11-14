@@ -20,8 +20,10 @@ function killTree(child) {
   }
 }
 
-// options: { cmd, args, cwd, env, input, timeoutMs, maxBytes, onOutput(stream, text) }
-// 반환: { done: Promise<result>, stop() }
+// options: { cmd, args, cwd, env, input, interactive, timeoutMs, maxBytes, onOutput(stream, text) }
+//   interactive: true 면 input 을 먼저 넣은 뒤에도 표준 입력을 닫지 않고, write()/endInput() 으로 실시간 입력을 받는다.
+//   이때 시간 제한은 "마지막 입력(또는 시작) 뒤 timeoutMs" 이다(사람이 입력하는 시간은 제한하지 않기 위해 입력할 때마다 다시 잰다).
+// 반환: { done: Promise<result>, stop(), write(text), endInput() }
 // result: { code, timedOut, truncated, stopped, durationMs, stdout, stderr, spawnError }
 function startProcess(options) {
   const timeoutMs = options.timeoutMs || DEFAULT_TIMEOUT_MS
@@ -35,9 +37,17 @@ function startProcess(options) {
   let stderr = ''
   let child = null
   let timer = null
+  let finished = false
+
+  const armTimer = () => {
+    clearTimeout(timer)
+    timer = setTimeout(() => {
+      timedOut = true
+      if (child) killTree(child)
+    }, timeoutMs)
+  }
 
   const done = new Promise((resolve) => {
-    let finished = false
     const finish = (code, spawnError) => {
       if (finished) return
       finished = true
@@ -91,12 +101,14 @@ function startProcess(options) {
     // 입력을 다 읽지 않고 끝나는 프로그램에서 EPIPE 가 나도 앱이 죽지 않게 한다.
     child.stdin.on('error', () => {})
     const input = options.input
-    child.stdin.end(typeof input === 'string' && input !== '' ? Buffer.from(input, 'utf8') : undefined)
+    const initial = typeof input === 'string' && input !== '' ? Buffer.from(input, 'utf8') : undefined
+    if (options.interactive) {
+      if (initial) child.stdin.write(initial)
+    } else {
+      child.stdin.end(initial)
+    }
 
-    timer = setTimeout(() => {
-      timedOut = true
-      killTree(child)
-    }, timeoutMs)
+    armTimer()
   })
 
   return {
@@ -104,6 +116,19 @@ function startProcess(options) {
     stop() {
       stopped = true
       if (child) killTree(child)
+    },
+    // 실시간 입력(interactive 일 때만). 보냈으면 true.
+    write(text) {
+      if (!options.interactive || finished || !child || !child.stdin.writable || typeof text !== 'string') return false
+      child.stdin.write(Buffer.from(text, 'utf8'))
+      armTimer()
+      return true
+    },
+    // 표준 입력을 닫는다(콘솔의 Ctrl+D / Ctrl+Z 와 같음). 프로그램이 입력 끝을 만난다.
+    endInput() {
+      if (!options.interactive || finished || !child || !child.stdin.writable) return false
+      child.stdin.end()
+      return true
     },
   }
 }

@@ -57,6 +57,7 @@ function registerIpcHandlers(getWindow, appId) {
         fileName: request.fileName,
         mode: request.mode === 'compile' ? 'compile' : 'run',
         input: typeof request.input === 'string' ? request.input : '',
+        interactive: request.interactive === true,
         timeoutMs: current.timeoutSec * 1000,
         cases,
       },
@@ -75,6 +76,16 @@ function registerIpcHandlers(getWindow, appId) {
   // 앱이 끝날 때 돌고 있는 풀이 프로세스가 남지 않게 한다.
   app.on('will-quit', () => {
     if (activeRun) activeRun.job.stop()
+  })
+
+  // 실행 중인 프로그램에 한 줄(또는 글자)을 보낸다. 최대 100KB. 입력 끝(EOF)은 run:endInput.
+  ipcMain.handle('run:input', (_e, text) => {
+    if (!activeRun || typeof text !== 'string' || text.length > 100 * 1024) return { ok: false }
+    return { ok: activeRun.job.write(text) }
+  })
+  ipcMain.handle('run:endInput', () => {
+    if (!activeRun) return { ok: false }
+    return { ok: activeRun.job.endInput() }
   })
 
   ipcMain.handle('run:stop', () => {

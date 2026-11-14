@@ -13,6 +13,8 @@ const { compareOutput } = require('./output-compare')
 const { compareJson, lastLine } = require('./json-compare')
 
 const COMPILE_TIMEOUT_MS = 30000
+// 실시간 입력 실행은 사람이 생각하는 시간이 있으므로 "마지막 입력 뒤" 5분까지 기다린다(그 전에 멈추려면 중지 버튼).
+const INTERACTIVE_IDLE_MS = 5 * 60 * 1000
 
 function prepareFailure(error, message, extra) {
   return { ok: false, phase: 'prepare', error, message, ...extra }
@@ -30,6 +32,7 @@ function createRunService(deps) {
   //   케이스 result: { ok, phase: 'cases', passed, total, caseResults: [...], compileOutput, toolVersion }
   function start(request, onEvent) {
     let current = null
+    let liveProc = null // 실시간 입력을 받는 실행 프로세스(interactive)
     let stoppedEarly = false
     const emit = (event) => {
       if (onEvent) onEvent(event)
@@ -45,6 +48,8 @@ function createRunService(deps) {
       const withCases = Array.isArray(request.cases)
       const mode = request.mode === 'compile' ? 'compile' : 'run'
       const kind = kindOf(request.fileName)
+      // 실시간 입력은 입출력 문제를 한 번 실행할 때만 쓴다(케이스 실행은 입력이 정해져 있다).
+      const interactive = request.interactive === true && mode === 'run' && kind === 'io' && !withCases
       if (mode === 'run' && kind !== 'io' && !withCases) {
         return prepareFailure('NOT_IO_PROBLEM', '함수 작성 문제는 입력을 읽지 않아 단독 실행할 수 없습니다. 케이스 탭에서 케이스(인수와 기대 반환값)를 만든 뒤 "전부 실행(F7)"을 누르세요. 컴파일 확인(F6)은 가능합니다.')
       }
@@ -71,12 +76,16 @@ function createRunService(deps) {
             cwd: dir,
             env: step.env,
             input,
-            timeoutMs: step.phase === 'run' ? request.timeoutMs || DEFAULT_TIMEOUT_MS : COMPILE_TIMEOUT_MS,
+            interactive: streaming && step.phase === 'run' && interactive,
+            timeoutMs:
+              step.phase === 'run' ? (interactive ? INTERACTIVE_IDLE_MS : request.timeoutMs || DEFAULT_TIMEOUT_MS) : COMPILE_TIMEOUT_MS,
             onOutput: streaming ? (stream, text) => emit({ type: 'output', phase: step.phase, stream, text: clean(text) }) : undefined,
           })
           current = proc
+          if (step.phase === 'run' && interactive) liveProc = proc
           const result = await proc.done
           current = null
+          liveProc = null
           return result
         }
         const isFailure = (r) => r.spawnError || r.code !== 0 || r.timedOut || r.truncated || r.stopped
@@ -150,6 +159,8 @@ function createRunService(deps) {
         stoppedEarly = true
         if (current) current.stop()
       },
+      write: (text) => (liveProc ? liveProc.write(text) : false),
+      endInput: () => (liveProc ? liveProc.endInput() : false),
     }
   }
 

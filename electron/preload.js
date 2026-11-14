@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld('runnerApi', {
   saveCase: (problemId, item) => ipcRenderer.invoke('cases:save', problemId, item),
   removeCase: (problemId, id) => ipcRenderer.invoke('cases:remove', problemId, id),
   stopRun: () => ipcRenderer.invoke('run:stop'),
+  sendRunInput: (text) => ipcRenderer.invoke('run:input', text),
+  endRunInput: () => ipcRenderer.invoke('run:endInput'),
   getToolInfo: () => ipcRenderer.invoke('tools:info'),
   // 실행 중 출력과 종료 결과가 온다. 해제 함수를 돌려준다.
   onRunEvent: (callback) => {
