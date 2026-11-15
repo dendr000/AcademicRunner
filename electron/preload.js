@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('runnerApi', {
   getSettings: () => ipcRenderer.invoke('settings:get'),
   chooseRoot: () => ipcRenderer.invoke('settings:chooseRoot'),
   scanProblems: () => ipcRenderer.invoke('problems:scan'),
+  getProgressAll: () => ipcRenderer.invoke('problems:progressAll'),
+  getProgressOne: (problemId) => ipcRenderer.invoke('problems:progressOne', problemId),
   readFile: (problemId, fileName) => ipcRenderer.invoke('files:read', problemId, fileName),
   statFile: (problemId, fileName) => ipcRenderer.invoke('files:stat', problemId, fileName),
   writeFile: (problemId, fileName, content, baseMtimeMs, force) =>

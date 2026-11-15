@@ -21,7 +21,7 @@
     return b
   }
 
-  // options: { footer: 편집기 아래에 붙일 요소(실행 패널), onOpened(problem, level, file): 파일을 열었을 때 }
+  // options: { footer: 편집기 아래에 붙일 요소(실행 패널), onOpened(problem, level, file): 파일을 열었을 때, onSaved(problem): 저장·되돌리기 직후 }
   function createEditorPane(container, api, options) {
     options = options || {}
     // 화면 부품
@@ -103,6 +103,7 @@
       if (result.ok) {
         baseMtime = result.mtimeMs
         lastError = ''
+        if (options.onSaved) options.onSaved(problem)
         return true
       }
       if (result.error === 'CONFLICT') {
@@ -125,6 +126,7 @@
         baseMtime = result.mtimeMs
         conflict = false
         lastError = ''
+        if (options.onSaved) options.onSaved(problem)
         hideBanner()
         saver.reset()
         flash('덮어썼습니다')
@@ -189,6 +191,7 @@
       baseMtime = result.mtimeMs
       conflict = false
       lastError = ''
+      if (options.onSaved) options.onSaved(problem)
       hideBanner()
       saver.reset()
       flash('시작 코드로 되돌렸습니다')

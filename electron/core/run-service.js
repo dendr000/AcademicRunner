@@ -10,6 +10,7 @@ const solutionFiles = require('./solution-files')
 const { startProcess, DEFAULT_TIMEOUT_MS } = require('./process-runner')
 const { languageOf, kindOf } = require('./scanner')
 const { compareOutput } = require('./output-compare')
+const { codeHash } = require('./code-hash')
 const { compareJson, lastLine } = require('./json-compare')
 
 const COMPILE_TIMEOUT_MS = 30000
@@ -38,9 +39,11 @@ function createRunService(deps) {
       if (onEvent) onEvent(event)
     }
 
+    let ranHash = ''
     const done = (async () => {
       const read = solutionFiles.readSolution(request.root, request.problemId, request.fileName)
       if (!read.ok) return prepareFailure(read.error, '풀이 파일을 읽을 수 없습니다 (' + read.error + ')')
+      ranHash = codeHash(read.content)
 
       const language = languageOf(request.fileName)
       const runner = deps.runners[language]
@@ -151,7 +154,7 @@ function createRunService(deps) {
           // 임시 폴더 정리에 실패해도 결과에는 영향이 없다(다음 실행은 새 폴더를 쓴다).
         }
       }
-    })()
+    })().then((r) => (r && typeof r === 'object' ? { ...r, codeHash: ranHash } : r))
 
     return {
       done,

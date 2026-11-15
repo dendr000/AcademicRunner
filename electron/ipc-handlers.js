@@ -8,6 +8,7 @@ const tools = require('./core/tool-locator')
 const { createRunService } = require('./core/run-service')
 const { runners } = require('./core/runners')
 const { createSettingsStore } = require('./core/settings')
+const { progressAll, progressOne } = require('./core/progress-status')
 
 function registerIpcHandlers(getWindow, appId) {
   const settings = createSettingsStore(app.getPath('userData'))
@@ -22,6 +23,9 @@ function registerIpcHandlers(getWindow, appId) {
   ipcMain.handle('settings:get', () => settings.get())
 
   ipcMain.handle('problems:scan', () => scanProblems(settings.get().root))
+  // 진행 현황: 풀이 파일이 시작 코드에서 바뀌었는지와 코드 해시(읽기만 한다)
+  ipcMain.handle('problems:progressAll', () => progressAll(settings.get().root))
+  ipcMain.handle('problems:progressOne', (_e, problemId) => (typeof problemId === 'string' ? progressOne(settings.get().root, problemId) : null))
 
   // 풀이 파일 읽기·저장. 인수 검사는 solution-files 가 한다(화면 값은 믿지 않는다).
   ipcMain.handle('files:read', (_e, problemId, fileName) => files.readSolution(settings.get().root, problemId, fileName))
@@ -68,7 +72,7 @@ function registerIpcHandlers(getWindow, appId) {
       .catch((e) => ({ ok: false, phase: 'prepare', error: 'INTERNAL', message: String((e && e.message) || e) }))
       .then((result) => {
         activeRun = null
-        send({ type: 'done', result })
+        send({ type: 'done', result, problemId: request.problemId, fileName: request.fileName })
       })
     return { ok: true, runId }
   })

@@ -54,3 +54,11 @@ test('normalize 는 null 과 숫자도 처리한다', () => {
   assert.strictEqual(normalize(null), '')
   assert.strictEqual(normalize(12), '12')
 })
+
+test('추가 조건(진행 상태)으로도 거른다', () => {
+  const { filterLevels } = require('../src/ui/problem-filter')
+  const levels = [{ level: 0, label: 'a', problems: [{ id: 'x', number: 1, title: 'A' }, { id: 'y', number: 2, title: 'B' }] }]
+  const out = filterLevels(levels, '', 'all', (p) => p.id === 'y')
+  assert.deepStrictEqual(out[0].problems.map((p) => p.id), ['y'])
+  assert.deepStrictEqual(filterLevels(levels, '', 'all', () => false), [])
+})

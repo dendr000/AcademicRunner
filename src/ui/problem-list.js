@@ -2,6 +2,7 @@
 // 왼쪽 문제 목록을 그린다. 글자는 textContent 로만 넣는다(문제 이름에 특수문자가 있어도 안전).
 (function () {
   const KIND_LABEL = { io: '입출력', function: '함수', unknown: '-' }
+  const STATUS_LABEL = { untouched: '안 품', working: '작성 중', passed: '통과' }
   const LANGUAGE_LABEL = { java: 'Java', python: 'Python', javascript: 'JS', c: 'C', cpp: 'C++', sql: 'SQL' }
 
   function el(tag, className, text) {
@@ -11,7 +12,8 @@
     return node
   }
 
-  function createProblemList(container, onSelect) {
+  // statusOf(problem): 'untouched' | 'working' | 'passed' (없으면 상태 표시 없음)
+  function createProblemList(container, onSelect, statusOf) {
     let selectedId = null
 
     function render(levels, emptyMessage) {
@@ -30,6 +32,14 @@
           if (problem.id === selectedId) row.classList.add('selected')
           row.appendChild(el('span', 'problem-number', String(problem.number).padStart(2, '0')))
           row.appendChild(el('span', 'problem-title', problem.title))
+          if (statusOf) {
+            const status = statusOf(problem)
+            const dot = el('span', 'status-dot')
+            dot.dataset.status = status
+            dot.title = STATUS_LABEL[status] || ''
+            dot.setAttribute('aria-label', STATUS_LABEL[status] || '')
+            row.insertBefore(dot, row.firstChild)
+          }
           row.appendChild(el('span', 'chip chip-kind', KIND_LABEL[problem.kind] || '-'))
           const langs = [...new Set(problem.files.map((f) => f.language))]
           for (const lang of langs) row.appendChild(el('span', 'chip chip-lang', LANGUAGE_LABEL[lang] || lang))

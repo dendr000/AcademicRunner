@@ -30,6 +30,14 @@
       <div class="sidebar-tools">
         <input id="search-input" class="search-input" type="search" placeholder="번호나 제목으로 검색" aria-label="문제 검색" autocomplete="off">
         <select id="level-filter" class="level-filter" aria-label="단계 필터"></select>
+        <select id="status-filter" class="level-filter" aria-label="진행 상태 필터">
+          <option value="all">전체 상태</option>
+          <option value="untouched">안 푼 문제</option>
+          <option value="working">작성 중</option>
+          <option value="passed">통과</option>
+          <option value="today">오늘 통과</option>
+        </select>
+        <p id="progress-summary" class="progress-summary"></p>
       </div>
       <div id="problem-list" class="problem-list"></div>
     </aside>
@@ -46,6 +54,7 @@
   </footer>
   <script src="theme.js"></script>
   <script src="ui/problem-filter.js"></script>
+  <script src="ui/progress.js"></script>
   <script src="ui/problem-list.js"></script>
   <script src="ui/problem-nav.js"></script>
   <script src="ui/keymap.js"></script>

@@ -14,6 +14,7 @@ AcademicRunner/
     features/test-cases.md    시험 케이스 설명
     features/menubar-keymap.md 메뉴바·단축키 설정 설명
     features/submit-check.md   제출 전 점검 설명
+    features/progress.md       진행 현황 설명
     troubleshooting.md        문제 해결 기록
     filetree.md               이 문서
   electron/
@@ -28,6 +29,8 @@ AcademicRunner/
       run-service.js   임시 폴더에서 컴파일·실행하고 정리
       tool-locator.js  javac/java/python 위치 찾기
       case-store.js    시험 케이스 저장(cases.json)
+      code-hash.js     코드 정규화와 해시(진행 현황)
+      progress-status.js  문제별 진행 정보(시작 코드와 비교)
       output-compare.js  기대/실제 출력 비교
       json-compare.js  함수 문제 반환값(JSON) 비교
       harness/java-harness.js  Java 함수 문제 호출 코드 생성
@@ -61,6 +64,7 @@ AcademicRunner/
     ui/about-dialog.js    정보 창
     ui/submit-check.js    제출 전 점검 규칙(순수 함수)
     ui/submit-flow.js     제출 전 점검 진행과 결과 창
+    ui/progress.js        진행 상태 판단·통과 기록·집계(순수 함수)
   test/
     packaging.test.js       아이콘·메인 프로세스·패키징 설정 점검
     scanner.test.js         스캐너(임시 폴더)
@@ -80,6 +84,8 @@ AcademicRunner/
     problem-nav.test.js     이전/다음 문제 계산
     keymap.test.js          단축키 표·충돌·저장
     submit-check.test.js    제출 전 점검 규칙
+    progress.test.js        진행 상태·통과 기록·집계
+    progress-status.test.js 코드 정규화·해시, 시작 코드와 비교
     snippet-data.test.js    스니펫 목록 형식
     member-data.test.js     변수 종류 짐작·점 자동 완성 목록
     interactive-input.test.js  실시간 입력(콘솔처럼)

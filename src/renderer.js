@@ -38,6 +38,7 @@
     footer: runPanel.element,
     onCheck: () => submitFlow.open(),
     onOpened: (problem) => runPanel.onOpened(problem),
+    onSaved: (problem) => updateProgressOf(problem.id),
   })
   let openedId = null // 지금 편집기에 열려 있는 문제
   const submitFlow = window.createSubmitFlow(api, { editorPane, runPanel })
@@ -55,17 +56,52 @@
     }
   }
 
-  const list = window.createProblemList(document.getElementById('problem-list'), showWorkspace)
+  // 진행 현황: 파일이 시작 코드에서 바뀌었는지(main 이 계산)와 통과 기록(이 화면 저장소)으로 상태를 정한다.
+  const statusFilter = document.getElementById('status-filter')
+  const progressSummary = document.getElementById('progress-summary')
+  const progress = window.progressLib.createProgress(window.localStorage)
+  let progressMap = {}
+  const statusOf = (problem) => progress.statusOf(problem.id, progressMap[problem.id])
+  const list = window.createProblemList(document.getElementById('problem-list'), showWorkspace, statusOf)
+
+  async function loadProgress() {
+    try {
+      progressMap = (await api.getProgressAll()) || {}
+    } catch {
+      progressMap = {}
+    }
+  }
+
+  async function updateProgressOf(problemId) {
+    try {
+      const info = await api.getProgressOne(problemId)
+      if (info) progressMap[problemId] = info
+      else delete progressMap[problemId]
+    } catch {
+      return
+    }
+    refreshList()
+  }
+
+  // 시험 케이스를 전부 통과했으면 그때의 코드를 통과로 기록한다.
+  api.onRunEvent((event) => {
+    const r = event && event.type === 'done' ? event.result : null
+    if (!r || r.phase !== 'cases' || !r.ok || r.stopped || !(r.total > 0) || !r.codeHash || !event.problemId) return
+    if (progress.markPassed(event.problemId, event.fileName, r.codeHash)) updateProgressOf(event.problemId)
+  })
 
   // 지금 화면에 보이는(검색·단계 필터를 거친) 단계 목록
   function visibleLevels() {
     if (!scan || !scan.ok) return []
-    return window.problemFilter.filterLevels(scan.levels, searchInput.value, levelFilter.value)
+    const matches = window.progressLib.matcherFor(statusFilter.value, statusOf, (p) => progress.passedToday(p.id, progressMap[p.id]))
+    return window.problemFilter.filterLevels(scan.levels, searchInput.value, levelFilter.value, matches)
   }
 
   function refreshList() {
     if (!scan || !scan.ok) return // 스캔 실패 상태에서는 목록을 그리지 않는다
     list.render(visibleLevels(), '맞는 문제가 없습니다.')
+    const c = window.progressLib.countStatuses(scan.levels, statusOf)
+    progressSummary.textContent = `통과 ${c.passed} / 작성 중 ${c.working} / 전체 ${c.total}`
   }
 
   // 목록에서 고른 것처럼 문제를 연다(단축키·마지막 문제 복원용).
@@ -126,6 +162,7 @@
     const settings = await api.getSettings()
     statusRoot.textContent = '문제 폴더: ' + settings.root
     scan = await api.scanProblems()
+    await loadProgress()
     // 폴더가 바뀌었을 수 있으므로 이전 선택은 버린다.
     list.select(null)
     showPlaceholder()
@@ -197,6 +234,7 @@
     document.getElementById('status-tools').textContent = `Java ${clean(t.java)}  Python ${clean(t.python)}  Node ${clean(t.node)}`
   })
   levelFilter.addEventListener('change', refreshList)
+  statusFilter.addEventListener('change', refreshList)
   document.getElementById('root-button').addEventListener('click', async () => {
     await editorPane.flush() // 폴더가 바뀌기 전에 편집 중인 내용을 원래 폴더에 저장해 둔다.
     const result = await api.chooseRoot()
