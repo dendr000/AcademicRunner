@@ -13,6 +13,7 @@ AcademicRunner/
     features/run.md           실행 패널·러너 설명
     features/test-cases.md    시험 케이스 설명
     features/menubar-keymap.md 메뉴바·단축키 설정 설명
+    features/submit-check.md   제출 전 점검 설명
     troubleshooting.md        문제 해결 기록
     filetree.md               이 문서
   electron/
@@ -58,6 +59,8 @@ AcademicRunner/
     ui/menubar.js         최상단 메뉴바
     ui/keymap-dialog.js   단축키 설정 창
     ui/about-dialog.js    정보 창
+    ui/submit-check.js    제출 전 점검 규칙(순수 함수)
+    ui/submit-flow.js     제출 전 점검 진행과 결과 창
   test/
     packaging.test.js       아이콘·메인 프로세스·패키징 설정 점검
     scanner.test.js         스캐너(임시 폴더)
@@ -76,6 +79,7 @@ AcademicRunner/
     run-service-function.test.js  함수 문제 실행
     problem-nav.test.js     이전/다음 문제 계산
     keymap.test.js          단축키 표·충돌·저장
+    submit-check.test.js    제출 전 점검 규칙
     snippet-data.test.js    스니펫 목록 형식
     member-data.test.js     변수 종류 짐작·점 자동 완성 목록
     interactive-input.test.js  실시간 입력(콘솔처럼)

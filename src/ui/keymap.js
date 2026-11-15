@@ -6,6 +6,7 @@
   const ACTIONS = [
     { id: 'chooseRoot', label: '문제 폴더 선택', group: '파일', key: '' },
     { id: 'save', label: '지금 저장', group: '파일', key: 'Ctrl+S' },
+    { id: 'submitCheck', label: '제출 전 점검', group: '파일', key: 'Ctrl+Shift+Enter' },
     { id: 'copyAll', label: '코드 전체 복사', group: '파일', key: 'Ctrl+Shift+C' },
     { id: 'restore', label: '시작 코드로 되돌리기', group: '파일', key: 'Ctrl+Shift+R' },
     { id: 'quit', label: '종료', group: '파일', key: '' },

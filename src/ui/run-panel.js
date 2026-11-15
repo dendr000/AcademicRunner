@@ -182,9 +182,14 @@
 
     // 준비 단계(저장·설정 읽기)는 비동기라 running 이 켜지기 전에 F5 를 또 누를 수 있다. 그 사이를 막는다.
     let starting = false
+    let external = false // 제출 전 점검처럼 다른 기능이 실행을 쓰는 중
 
     async function start(mode) {
       if (running || starting) return
+      if (external) {
+        setStatus('제출 전 점검 중에는 실행할 수 없습니다', 'fail')
+        return
+      }
       starting = true
       try {
         await startInner(mode)
@@ -320,7 +325,7 @@
       runAlt: () => start('run'),
       stop: () => stop(),
       compile: () => start('compile'),
-      runCases: () => casesPanel.runAll().then(() => showTab('cases')),
+      runCases: () => (external ? setStatus('제출 전 점검 중에는 실행할 수 없습니다', 'fail') : casesPanel.runAll().then(() => showTab('cases'))),
       tabInput: () => showTab('input'),
       tabOutput: () => showTab('output'),
       tabCases: () => showTab('cases'),
@@ -333,8 +338,17 @@
       onOpened,
       start,
       stop,
+      // 다른 기능(제출 전 점검)이 실행을 쓰는 동안 실행 버튼을 막는다.
+      setExternalBusy(value) {
+        external = value
+        runButton.disabled = value || running
+        compileButton.disabled = value || running
+      },
       get running() {
         return running
+      },
+      get casesRunning() {
+        return casesPanel.running
       },
       dispose() {
         casesPanel.dispose()

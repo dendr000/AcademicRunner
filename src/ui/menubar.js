@@ -4,7 +4,7 @@
 (function () {
   // 'sep' 는 구분선
   const MENUS = [
-    { label: '파일', items: ['chooseRoot', 'save', 'sep', 'copyAll', 'restore', 'sep', 'quit'] },
+    { label: '파일', items: ['chooseRoot', 'save', 'sep', 'submitCheck', 'copyAll', 'restore', 'sep', 'quit'] },
     { label: '편집', items: ['undo', 'redo', 'sep', 'find', 'replace', 'commentLine'] },
     { label: '보기', items: ['toggleSidebar', 'toggleTheme', 'sep', 'fontBigger', 'fontSmaller', 'fontReset'] },
     { label: '이동', items: ['quickJump', 'prevProblem', 'nextProblem'] },
@@ -13,7 +13,7 @@
     { label: '도움말', items: ['about'] },
   ]
   // 메뉴에서만 쓰는 이름(전체 문구는 동작 목록의 label)
-  const MENU_LABEL = { chooseRoot: '문제 폴더 선택...', openKeymap: '단축키 설정...', about: '정보...', quit: '종료' }
+  const MENU_LABEL = { submitCheck: '제출 전 점검...', chooseRoot: '문제 폴더 선택...', openKeymap: '단축키 설정...', about: '정보...', quit: '종료' }
 
   function el(tag, className, text) {
     const node = document.createElement(tag)

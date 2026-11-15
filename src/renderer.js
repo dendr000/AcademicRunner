@@ -36,9 +36,11 @@
   })
   editorPane = window.createEditorPane(workspace, api, {
     footer: runPanel.element,
+    onCheck: () => submitFlow.open(),
     onOpened: (problem) => runPanel.onOpened(problem),
   })
   let openedId = null // 지금 편집기에 열려 있는 문제
+  const submitFlow = window.createSubmitFlow(api, { editorPane, runPanel })
 
   // 문제를 연다. 저장하지 못한 변경 때문에 사용자가 이동을 취소하면 목록 선택을 원래대로 돌린다.
   async function showWorkspace(problem, level) {
@@ -157,6 +159,7 @@
   window.appActions.registerActions({
     chooseRoot: () => document.getElementById('root-button').click(),
     save: () => editorPane.flush(),
+    submitCheck: () => submitFlow.open(),
     copyAll: () => editorPane.copyAll(),
     restore: () => editorPane.restore(),
     quit: () => window.close(), // 닫기 전에 저장하는 기존 흐름(onBeforeClose)을 그대로 탄다

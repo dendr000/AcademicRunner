@@ -242,6 +242,7 @@
         tabs,
         el('span', 'spacer'),
         statusEl,
+        ...(options.onCheck ? [button('제출 전 점검', '컴파일·시험 케이스·흔한 실수를 점검한 뒤 복사합니다', options.onCheck)] : []),
         button('전체 복사', '코드 전체를 클립보드에 복사합니다 (사이트에 붙여 넣기용)', copyAll),
         button('시작 코드로', '사이트 시작 코드로 되돌립니다', restore),
       )
@@ -297,6 +298,8 @@
         return openFile(problem, level, problem.files[0])
       },
       flush: () => saver.flush(),
+      // 편집기의 현재 코드 전체(저장 여부와 상관없이 화면에 보이는 그대로)
+      getText: () => (model ? model.getValue() : ''),
       // 메뉴에서 편집기 기본 기능을 부른다(실행 취소, 찾기 등). name: Monaco 동작 id
       trigger(name) {
         if (!editor) return
