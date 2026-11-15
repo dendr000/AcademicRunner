@@ -153,6 +153,7 @@
   })
   // 동작 등록: 단축키와 메뉴바가 같은 동작을 부른다(어떤 키에 묶을지는 keymap.js).
   const keymapDialog = window.createKeymapDialog()
+  const aboutDialog = window.createAboutDialog(api)
   window.appActions.registerActions({
     chooseRoot: () => document.getElementById('root-button').click(),
     save: () => editorPane.flush(),
@@ -172,6 +173,12 @@
     prevProblem: () => openProblem(window.problemNav.neighbor(visibleLevels(), openedId, -1)),
     nextProblem: () => openProblem(window.problemNav.neighbor(visibleLevels(), openedId, 1)),
     openKeymap: () => keymapDialog.open(),
+    about: () => aboutDialog.open(),
+    undo: () => editorPane.trigger('undo'),
+    redo: () => editorPane.trigger('redo'),
+    find: () => editorPane.trigger('actions.find'),
+    replace: () => editorPane.trigger('editor.action.startFindReplace'),
+    commentLine: () => editorPane.trigger('editor.action.commentLine'),
   })
   window.installShortcuts()
   window.createMenubar(document.body)

@@ -297,6 +297,12 @@
         return openFile(problem, level, problem.files[0])
       },
       flush: () => saver.flush(),
+      // 메뉴에서 편집기 기본 기능을 부른다(실행 취소, 찾기 등). name: Monaco 동작 id
+      trigger(name) {
+        if (!editor) return
+        editor.focus()
+        editor.trigger('menu', name, null)
+      },
       // 글자 크기: delta 만큼 키우거나(양수) 줄이고(음수), 0 이면 기본(14)으로. 8~40 으로 제한한다.
       changeFontSize(delta) {
         if (!editor) return

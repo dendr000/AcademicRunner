@@ -93,6 +93,7 @@
       let group = null
       rows = new Map()
       for (const a of lib.ACTIONS) {
+        if (a.fixed || a.id === 'about') continue // 바꿀 수 없는 항목은 목록에 넣지 않는다
         if (a.group !== group) {
           group = a.group
           list.appendChild(el('h3', 'keymap-group', group))
@@ -142,6 +143,7 @@
       build()
       renderAll()
       unsubscribe = window.keymap.onChange(renderAll)
+      window.appActions.setModal(true)
       document.addEventListener('keydown', onKey, true)
       overlay.querySelector('.keymap-key').focus()
     }
@@ -151,6 +153,7 @@
       if (captureId) stopCapture()
       document.removeEventListener('keydown', onKey, true)
       if (unsubscribe) unsubscribe()
+      window.appActions.setModal(false)
       overlay.remove()
       overlay = null
       if (returnFocus && returnFocus.focus) returnFocus.focus()

@@ -5,6 +5,7 @@
 (function () {
   const handlers = new Map()
   let capturing = false // 설정 창에서 새 키를 받는 중에는 단축키를 실행하지 않는다
+  let modal = false // 설정 창이 열려 있는 동안에는 뒤쪽 화면의 단축키를 막는다
 
   function registerActions(map) {
     for (const [id, fn] of Object.entries(map)) handlers.set(id, fn)
@@ -22,11 +23,15 @@
     capturing = value
   }
 
+  function setModal(value) {
+    modal = value
+  }
+
   function installShortcuts() {
     document.addEventListener(
       'keydown',
       (e) => {
-        if (capturing || e.isComposing) return
+        if (capturing || modal || e.isComposing) return
         const chord = window.keymapLib.chordFromEvent(e)
         if (!chord) return
         const id = window.keymap.actionFor(chord)
@@ -39,6 +44,6 @@
     )
   }
 
-  window.appActions = { registerActions, runAction, setCapturing }
+  window.appActions = { registerActions, runAction, setCapturing, setModal }
   window.installShortcuts = installShortcuts
 })()

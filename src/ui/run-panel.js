@@ -180,8 +180,20 @@
       }
     }
 
+    // 준비 단계(저장·설정 읽기)는 비동기라 running 이 켜지기 전에 F5 를 또 누를 수 있다. 그 사이를 막는다.
+    let starting = false
+
     async function start(mode) {
-      if (running) return
+      if (running || starting) return
+      starting = true
+      try {
+        await startInner(mode)
+      } finally {
+        starting = false
+      }
+    }
+
+    async function startInner(mode) {
       const target = hooks.currentFile()
       if (!target) {
         setStatus('먼저 왼쪽에서 문제를 고르세요', 'fail')

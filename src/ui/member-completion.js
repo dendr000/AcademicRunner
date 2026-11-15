@@ -28,7 +28,7 @@
     return [...names].map((name) => ({
       label: name,
       // Java 는 선언을 읽어 변수 종류를 옆에 보여 준다(예: int, Scanner, 배열).
-      detail: language === 'java' && !kw.has(name) ? typeLabel(window.memberData.inferJavaType(source, name)) : undefined,
+      detail: language === 'java' && source.length < 100000 && !kw.has(name) ? typeLabel(window.memberData.inferJavaType(source, name)) : undefined,
       kind: kw.has(name) ? monaco.languages.CompletionItemKind.Keyword : monaco.languages.CompletionItemKind.Variable,
       insertText: name,
       sortText: (kw.has(name) ? '2' : '1') + name,

@@ -9,6 +9,13 @@
     { id: 'copyAll', label: '코드 전체 복사', group: '파일', key: 'Ctrl+Shift+C' },
     { id: 'restore', label: '시작 코드로 되돌리기', group: '파일', key: 'Ctrl+Shift+R' },
     { id: 'quit', label: '종료', group: '파일', key: '' },
+    // fixed: 편집기(Monaco)가 정한 키를 메뉴에 보여 주기만 한다(바꿀 수 없고 단축키 설정 목록에도 없다).
+    { id: 'undo', label: '실행 취소', group: '편집', key: '', fixed: 'Ctrl+Z' },
+    { id: 'redo', label: '다시 실행', group: '편집', key: '', fixed: 'Ctrl+Y' },
+    { id: 'find', label: '찾기', group: '편집', key: '', fixed: 'Ctrl+F' },
+    { id: 'replace', label: '바꾸기', group: '편집', key: '', fixed: 'Ctrl+H' },
+    { id: 'commentLine', label: '줄 주석 토글', group: '편집', key: '', fixed: 'Ctrl+/' },
+    { id: 'about', label: '정보', group: '도움말', key: '' },
     { id: 'toggleSidebar', label: '문제 목록 접기/펴기', group: '보기', key: 'Ctrl+B' },
     { id: 'toggleTheme', label: '테마 전환 (시스템/라이트/다크)', group: '보기', key: '' },
     { id: 'fontBigger', label: '편집기 글자 크게', group: '보기', key: 'Ctrl+=' },

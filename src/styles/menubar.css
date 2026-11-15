@@ -160,3 +160,9 @@
 .dialog-message[data-kind="fail"] { color: var(--danger); }
 
 .dialog-bar { display: flex; align-items: center; gap: 8px; }
+
+/* 정보 창 */
+.about-box { width: min(480px, 100%); }
+.about-list { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; margin: 8px 0 16px; font-size: 13px; }
+.about-key { color: var(--text-muted); }
+.about-value { overflow-wrap: anywhere; }

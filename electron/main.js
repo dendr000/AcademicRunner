@@ -1,5 +1,5 @@
 // Copyright (c) dendr000. MIT License.
-const { app, BrowserWindow, nativeTheme, ipcMain } = require('electron')
+const { app, BrowserWindow, nativeTheme, ipcMain, Menu } = require('electron')
 const path = require('node:path')
 const { registerIpcHandlers } = require('./ipc-handlers')
 
@@ -10,7 +10,8 @@ app.setName('AcademicRunner')
 app.setAppUserModelId(APP_ID)
 
 // 두 번 실행되어 아이콘이 둘 생기는 것을 막는다.
-if (!app.requestSingleInstanceLock()) {
+const gotLock = app.requestSingleInstanceLock()
+if (!gotLock) {
   app.quit()
 }
 
@@ -60,7 +61,7 @@ function createWindow() {
 }
 
 // 화면이 부를 수 있는 기능은 허용 목록 IPC 로만 등록한다.
-registerIpcHandlers(() => mainWindow, APP_ID)
+if (gotLock) registerIpcHandlers(() => mainWindow, APP_ID)
 
 app.on('second-instance', () => {
   if (mainWindow) {
@@ -69,7 +70,11 @@ app.on('second-instance', () => {
   }
 })
 
-app.whenReady().then(createWindow)
+if (gotLock) {
+  // 메뉴는 화면 안의 메뉴바(src/ui/menubar.js)가 맡는다. 기본 메뉴를 두면 Ctrl+R(새로고침)·개발자 도구 키가 살아 있다.
+  Menu.setApplicationMenu(null)
+  app.whenReady().then(createWindow)
+}
 
 app.on('window-all-closed', () => {
   app.quit()

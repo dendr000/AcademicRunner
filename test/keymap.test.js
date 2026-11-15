@@ -16,6 +16,14 @@ test('기본 키에 중복이 없고 모두 지정 가능한 키다', () => {
   assert.strictEqual(new Set(ACTIONS.map((a) => a.id)).size, ACTIONS.length)
 })
 
+test('고정 표시 항목(fixed)은 키를 갖지 않아 단축키 충돌에 끼지 않는다', () => {
+  const fixed = ACTIONS.filter((a) => a.fixed)
+  assert.ok(fixed.length >= 4)
+  for (const a of fixed) assert.strictEqual(a.key, '')
+  const km = createKeymap(fakeStorage())
+  assert.strictEqual(km.actionFor('Ctrl+Z'), null)
+})
+
 test('키 이벤트를 키 이름으로 바꾼다', () => {
   assert.strictEqual(chordFromEvent({ code: 'KeyP', ctrlKey: true }), 'Ctrl+P')
   assert.strictEqual(chordFromEvent({ code: 'ArrowUp', ctrlKey: true, shiftKey: true }), 'Ctrl+Shift+Up')

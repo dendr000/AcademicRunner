@@ -57,6 +57,7 @@ AcademicRunner/
     ui/shortcuts.js       동작 등록소와 키 처리
     ui/menubar.js         최상단 메뉴바
     ui/keymap-dialog.js   단축키 설정 창
+    ui/about-dialog.js    정보 창
   test/
     packaging.test.js       아이콘·메인 프로세스·패키징 설정 점검
     scanner.test.js         스캐너(임시 폴더)
