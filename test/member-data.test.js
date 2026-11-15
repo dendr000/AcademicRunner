@@ -98,3 +98,78 @@ test('중복 이름이 없고 이름 형식이 올바르다', () => {
   const { BY_TYPE, STATIC } = require('../src/ui/member-data')
   for (const table of [BY_TYPE, STATIC]) for (const list of Object.values(table)) for (const it of list) assert.match(it.name, /^[A-Za-z_][A-Za-z0-9_]*$/)
 })
+
+const SRC = [
+  'class Person {',
+  '    private String name;',
+  '    int age, height;',
+  '    static int count = 0;',
+  '    Person(String name) { this.name = name; }',
+  '    String getName() { return name; }',
+  '    void setAge(int age, List<String> tags) { this.age = age; }',
+  '    static Person of(String n) { return new Person(n); }',
+  '    // void hidden() {}',
+  '}',
+  'enum Color { RED, GREEN(1), BLUE; int v; }',
+  'record Point(int x, int y) { double dist() { return 0; } }',
+  'public class Main {',
+  '    int total;',
+  '    void run() {',
+  '        Person p = new Person("a");',
+  '        Color c = Color.RED;',
+  '        Point pt = new Point(1, 2);',
+  '        Random rnd = new Random();',
+  '        BufferedReader br = null;',
+  '    }',
+  '}',
+].join('\n')
+
+test('내가 만든 클래스: 변수.은 필드·메서드(시그니처 포함)를 제안한다', () => {
+  const list = membersFor('java', SRC, 'p')
+  const n = names(list)
+  for (const x of ['name', 'age', 'height', 'count', 'getName', 'setAge', 'of', 'toString']) assert.ok(n.includes(x), x)
+  assert.ok(!n.includes('hidden'))
+  assert.ok(!n.includes('Person')) // 생성자는 제외
+  const set = list.find((x) => x.name === 'setAge')
+  assert.strictEqual(set.detail, '(int age, List<String> tags) -> void')
+  assert.strictEqual(set.params, '${1:age}, ${2:tags}')
+  assert.strictEqual(list.find((x) => x.name === 'age').params, null)
+})
+
+test('내가 만든 클래스 이름.은 static 과 enum 상수만 제안한다', () => {
+  assert.deepStrictEqual(names(membersFor('java', SRC, 'Person')).sort(), ['count', 'of'])
+  assert.deepStrictEqual(names(membersFor('java', SRC, 'Color')).sort(), ['BLUE', 'GREEN', 'RED'])
+})
+
+test('record 는 구성 요소를 접근 메서드로 제안한다', () => {
+  const n = names(membersFor('java', SRC, 'pt'))
+  assert.ok(n.includes('x') && n.includes('y') && n.includes('dist'))
+})
+
+test('this. 는 커서가 있는 클래스의 멤버를 제안한다', () => {
+  const inPerson = SRC.indexOf('this.name') + 5
+  const inMain = SRC.indexOf('Person p = new') + 1
+  assert.ok(names(membersFor('java', SRC, 'this', inPerson)).includes('getName'))
+  const main = names(membersFor('java', SRC, 'this', inMain))
+  assert.ok(main.includes('total') && main.includes('run') && !main.includes('getName'))
+  assert.deepStrictEqual(membersFor('java', SRC, 'this'), []) // 위치를 모르면 제안하지 않음
+})
+
+test('필드·메서드 결과 타입을 따라간다 (p.name. / p.getName().)', () => {
+  assert.ok(names(membersFor('java', SRC, 'p.name')).includes('substring'))
+  assert.ok(names(membersFor('java', SRC, 'p.getName()')).includes('length'))
+  assert.ok(names(membersFor('java', SRC, 'Person.of("x")')).includes('getName'))
+  assert.deepStrictEqual(membersFor('java', SRC, 'p.age'), []) // int 필드는 점 뒤에 붙일 것이 없다
+})
+
+test('표준 클래스 추가: Random, BufferedReader, Objects', () => {
+  assert.ok(names(membersFor('java', SRC, 'rnd')).includes('nextInt'))
+  assert.ok(names(membersFor('java', SRC, 'br')).includes('readLine'))
+  assert.ok(names(membersFor('java', 'int a;', 'Objects')).includes('equals'))
+})
+
+test('사용자 클래스가 없거나 깨진 소스에도 죽지 않는다', () => {
+  assert.deepStrictEqual(membersFor('java', 'class {', 'x'), [])
+  assert.deepStrictEqual(membersFor('java', 'class A { void f( {', 'x'), [])
+  assert.deepStrictEqual(membersFor('java', '', 'x'), [])
+})

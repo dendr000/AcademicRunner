@@ -1,5 +1,14 @@
 # 업데이트 내역 (CHANGELOG)
 
+## [1.12.0] - 2026-11-16 01:43
+
+### 추가 (Added)
+- 내가 만든 클래스(class, interface, enum, record)의 필드·메서드를 점 자동 완성에 표시. `p.` `this.` `Person.`(static·enum 상수) 지원하고, 메서드는 `(int age, String name) -> void` 처럼 인자와 반환 타입을 보여 줌. `p.name.` `p.getName().` 처럼 필드·메서드 결과 타입도 따라감
+- 표준 클래스 자동 완성 추가: Random, BufferedReader, StringTokenizer, Iterator, Integer·Long·Double 객체, Objects
+
+### 변경 (Changed)
+- int, double 같은 기본 타입 변수 뒤의 점에서는 제안을 띄우지 않음 (의미 없는 Object 메서드가 나오던 것을 정리)
+
 ## [1.11.0] - 2026-11-15 23:58
 
 ### 추가 (Added)

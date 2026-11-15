@@ -40,6 +40,8 @@
 
 ### 이름 자동 완성
 
+내가 만든 클래스도 제안합니다. `Person p` 라면 `p.` 에서 그 클래스의 필드와 메서드(인자·반환 타입 포함)가, 클래스 안에서 `this.` 를 치면 그 클래스의 멤버가, `Person.` 에서는 static 멤버와 enum 상수가 나옵니다. `p.name.` `p.getName().` 처럼 이어 붙여도 필드·메서드의 타입을 따라갑니다. 같은 파일 안의 선언만 읽는 간이 분석이라 다른 파일의 클래스, 제네릭 안의 타입(`List<Person>` 의 `get(0).`), 상속받은 멤버는 아직 모릅니다. 진짜 언어 서버(jdtls)는 설치본이 매우 커져서 쓰지 않았습니다.
+
 점이 없을 때(`ma` + `Ctrl+Space`)는 같은 파일에 나온 이름(변수·메서드)과 언어 예약어, 자주 쓰는 클래스(String, ArrayList 등)를 보여 줍니다. 편집기 기본 제안은 언어 서버 없이는 동작하지 않아 꺼 두고 `member-completion.js` 가 대신 합니다.
 
 전체 스니펫 목록은 `src/ui/snippet-data.js` 에 있고, 줄을 추가하면 바로 쓸 수 있습니다. 본문 문법은 `$1`(이동 칸), `${1:i}`(기본값이 있는 칸), `$0`(마지막 커서 위치)입니다.
@@ -75,7 +77,7 @@
 
 - `electron/core/solution-files.js` 읽기·저장·되돌리기·경로 검사
 - `src/ui/editor-pane.js` 편집 영역(탭, 상태, 버튼, 충돌 안내), `src/ui/monaco-loader.js` 편집기 불러오기
-- `src/ui/member-data.js` 점 자동 완성 목록과 종류 짐작, `src/ui/member-completion.js` Monaco 에 등록
+- `src/ui/java-classes.js` 내 클래스 필드·메서드 읽기, `src/ui/member-data.js` 점 자동 완성 목록과 종류 짐작, `src/ui/member-completion.js` Monaco 에 등록
 - `src/ui/snippet-data.js` 스니펫 목록(순수 데이터), `src/ui/snippets.js` Monaco 에 등록
 - `scripts/vendor-monaco.js` Monaco 복사(언어 서비스·번역·소스맵 제외, 약 5MB)
 

@@ -3,6 +3,7 @@
 // 언어 서비스(진짜 타입 분석)가 없으므로 같은 파일 안의 선언(`Scanner sc`, `int[] num`)을 정규식으로 읽는다.
 // 항목: [이름, 설명, 괄호 안 자리표시(없으면 '' = 빈 괄호, null = 괄호 없는 속성)]
 (function (root) {
+  const jc = typeof module !== 'undefined' && module.exports ? require('./java-classes') : root.javaClasses
   const m = (name, detail, params) => ({ name, detail, params: params === undefined ? '' : params })
 
   const STRING = [
@@ -75,6 +76,13 @@
   ]
   const OBJECT = [m('toString', '문자열로'), m('equals', '같은가', '${1:other}'), m('hashCode', '해시 값'), m('getClass', '클래스 정보')]
 
+  const RANDOM = [m('nextInt', '난수 정수 (0 이상 n 미만)', '${1:n}'), m('nextDouble', '난수 실수 (0 이상 1 미만)'), m('nextBoolean', '난수 참/거짓'), m('nextLong', '난수 long'), m('setSeed', '시드 지정', '${1:seed}')]
+  const READER = [m('readLine', '한 줄 읽기 (없으면 null)'), m('read', '글자 하나 읽기'), m('ready', '읽을 것이 있는가'), m('lines', '줄 스트림'), m('close', '닫기')]
+  const TOKENIZER = [m('nextToken', '다음 토큰'), m('hasMoreTokens', '토큰이 더 있는가'), m('countTokens', '남은 토큰 수')]
+  const INTEGER_OBJ = [m('intValue', 'int 값'), m('longValue', 'long 값'), m('doubleValue', 'double 값'), m('compareTo', '비교', '${1:other}'), ...OBJECT]
+  const ITERATOR = [m('hasNext', '다음 요소가 있는가'), m('next', '다음 요소'), m('remove', '현재 요소 삭제')]
+  const OBJECTS = [m('equals', '같은가 (null 안전)', '${1:a}, ${2:b}'), m('hash', '해시 값', '${1:a}, ${2:b}'), m('requireNonNull', 'null 이면 예외', '${1:x}'), m('isNull', 'null 인가', '${1:x}'), m('toString', '문자열로', '${1:x}')]
+
   // 변수 타입(제네릭 제외한 이름) -> 목록
   const BY_TYPE = {
     String: STRING, Scanner: SCANNER, StringBuilder: BUILDER, StringBuffer: BUILDER,
@@ -83,9 +91,10 @@
     Set: SET, HashSet: SET, TreeSet: SET, LinkedHashSet: SET,
     Deque: DEQUE, ArrayDeque: DEQUE, Queue: DEQUE, Stack: [...DEQUE, ...LIST], PriorityQueue: DEQUE,
     PrintStream: PRINT,
+    Random: RANDOM, BufferedReader: READER, StringTokenizer: TOKENIZER, Integer: INTEGER_OBJ, Long: INTEGER_OBJ, Double: INTEGER_OBJ, Iterator: ITERATOR,
   }
   // 변수가 아니라 클래스 이름 자체에 붙는 것(static)
-  const STATIC = { Math: MATH, Integer: INTEGER, Long: INTEGER, Double: INTEGER, Arrays: ARRAYS, Collections: COLLECTIONS, System: SYSTEM, String: STRING, Character: CHARACTER, 'System.out': PRINT, 'System.err': PRINT }
+  const STATIC = { Math: MATH, Integer: INTEGER, Long: INTEGER, Double: INTEGER, Arrays: ARRAYS, Collections: COLLECTIONS, System: SYSTEM, String: STRING, Character: CHARACTER, Objects: OBJECTS, 'System.out': PRINT, 'System.err': PRINT }
 
   const PY_STR = ['upper', 'lower', 'strip', 'split', 'join', 'replace', 'find', 'startswith', 'endswith', 'isdigit', 'isalpha', 'format', 'count', 'index', 'lstrip', 'rstrip', 'title', 'zfill']
   const PY_LIST = ['append', 'extend', 'insert', 'remove', 'pop', 'sort', 'reverse', 'index', 'count', 'copy', 'clear']
@@ -158,13 +167,59 @@
   }
 
   // 반환: [{ name, detail, params }]
-  function membersFor(language, source, receiver) {
+  // 사용자 클래스의 멤버를 목록 항목으로. staticOnly 면 static 과 enum 상수만. 인스턴스 변수에서는 모두(Java 는 static 도 허용).
+  function userMembers(cls, staticOnly) {
+    return cls.members
+      .filter((x) => !staticOnly || x.isStatic)
+      .concat(staticOnly ? [] : OBJECT.map((o) => ({ ...o, isStatic: false })).filter((o) => !cls.members.some((x) => x.name === o.name)))
+      .map((x) => ({ name: x.name, detail: x.detail, params: x.params }))
+  }
+
+  // 받는 식의 타입 이름. this, 내 클래스의 필드·메서드 결과(p.name, p.getName()), 선언 읽기 순으로 본다.
+  function resolveJavaType(source, receiver, offset, classes) {
+    const byName = (n) => classes.find((c) => c.name === n)
+    if (receiver === 'this') {
+      const c = typeof offset === 'number' ? jc.enclosingClass(classes, offset) : null
+      return c ? c.name : null
+    }
+    const typeOfName = (n) => (n === 'this' ? resolveJavaType(source, 'this', offset, classes) : inferJavaType(source, n))
+    const call = new RegExp('^(' + IDENT + ')\\.(' + IDENT + ')\\(').exec(receiver)
+    if (call) {
+      const cls = byName(typeOfName(call[1])) || (byName(call[1]) && !hasDeclaration(source, call[1]) ? byName(call[1]) : null)
+      const member = cls && cls.members.find((x) => x.name === call[2] && x.params !== null)
+      if (member) return member.type
+      return callResultType(receiver)
+    }
+    const dotted = new RegExp('^(' + IDENT + ')\\.(' + IDENT + ')$').exec(receiver)
+    if (dotted) {
+      const cls = byName(typeOfName(dotted[1]))
+      const member = cls && cls.members.find((x) => x.name === dotted[2] && x.params === null)
+      if (member) return member.type
+      return null
+    }
+    // 단독 이름: 선언을 읽는다. 선언이 없고 클래스 안이라면 그 클래스의 필드를 본다(`name.` 처럼 this 없이 쓴 경우).
+    const declared = inferJavaType(source, receiver)
+    if (declared) return declared
+    const cur = typeof offset === 'number' ? jc.enclosingClass(classes, offset) : null
+    const field = cur && cur.members.find((x) => x.name === receiver && x.params === null)
+    return field ? field.type : null
+  }
+
+  const PRIMITIVES = ['int', 'long', 'double', 'float', 'short', 'byte', 'char', 'boolean']
+
+  function membersFor(language, source, receiver, offset) {
     if (!receiver) return []
     if (language === 'java') {
+      const classes = jc ? jc.parseJavaClasses(source) : []
+      const byName = (n) => classes.find((c) => c.name === n)
+      // 내가 만든 클래스 이름 자체(Person.)는 static 멤버와 enum 상수만
+      if (byName(receiver) && !hasDeclaration(source, receiver)) return userMembers(byName(receiver), true)
       if (STATIC[receiver] && !hasDeclaration(source, receiver)) return STATIC[receiver]
-      const type = callResultType(receiver) || inferJavaType(source, receiver)
+      const type = resolveJavaType(source, receiver, offset, classes)
       if (type === 'array') return ARRAY
+      if (type && byName(type)) return userMembers(byName(type), false)
       if (type && BY_TYPE[type]) return BY_TYPE[type]
+      if (type && PRIMITIVES.includes(type)) return [] // int, double 등은 점 뒤에 붙일 것이 없다
       if (type) return OBJECT
       return []
     }
