@@ -9,11 +9,11 @@
     { label: '보기', items: ['toggleSidebar', 'toggleTheme', 'sep', 'fontBigger', 'fontSmaller', 'fontReset'] },
     { label: '이동', items: ['quickJump', 'prevProblem', 'nextProblem'] },
     { label: '실행', items: ['run', 'stop', 'compile', 'runCases', 'sep', 'tabInput', 'tabOutput', 'tabCases'] },
-    { label: '설정', items: ['openKeymap'] },
+    { label: '설정', items: ['openEditorSettings', 'openKeymap'] },
     { label: '도움말', items: ['about'] },
   ]
   // 메뉴에서만 쓰는 이름(전체 문구는 동작 목록의 label)
-  const MENU_LABEL = { submitCheck: '제출 전 점검...', chooseRoot: '문제 폴더 선택...', openKeymap: '단축키 설정...', about: '정보...', quit: '종료' }
+  const MENU_LABEL = { submitCheck: '제출 전 점검...', chooseRoot: '문제 폴더 선택...', openKeymap: '단축키 설정...', openEditorSettings: '환경 설정...', about: '정보...', quit: '종료' }
 
   function el(tag, className, text) {
     const node = document.createElement(tag)

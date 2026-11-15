@@ -5,6 +5,7 @@ const { contextBridge, ipcRenderer } = require('electron')
 contextBridge.exposeInMainWorld('runnerApi', {
   getAppInfo: () => ipcRenderer.invoke('app:info'),
   getSettings: () => ipcRenderer.invoke('settings:get'),
+  setTimeoutSec: (sec) => ipcRenderer.invoke('settings:setTimeout', sec),
   chooseRoot: () => ipcRenderer.invoke('settings:chooseRoot'),
   scanProblems: () => ipcRenderer.invoke('problems:scan'),
   getProgressAll: () => ipcRenderer.invoke('problems:progressAll'),

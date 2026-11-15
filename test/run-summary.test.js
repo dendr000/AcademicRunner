@@ -35,3 +35,11 @@ test('중지, 출력 초과, 컴파일 오류, 비정상 종료, 준비 실패�
 test('결과가 없으면 실패로 본다', () => {
   assert.strictEqual(describeResult(null, 10).kind, 'fail')
 })
+
+test('케이스 시간 요약: 가장 느린 것과 합계, 건너뛴 것은 제외', () => {
+  const { describeTimes } = require('../src/ui/run-summary')
+  assert.deepStrictEqual(describeTimes([{ status: 'pass', durationMs: 10 }, { status: 'fail', durationMs: 250 }, { status: 'skipped', durationMs: 999 }, { status: 'pass' }]), { totalMs: 260, slowestMs: 250, slowestIndex: 1, count: 2 })
+  assert.strictEqual(describeTimes([]), null)
+  assert.strictEqual(describeTimes(undefined), null)
+  assert.strictEqual(describeTimes([{ status: 'skipped' }]), null)
+})

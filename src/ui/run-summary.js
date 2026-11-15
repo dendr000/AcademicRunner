@@ -24,7 +24,25 @@
     return { kind: 'fail', text: `실행 실패, 종료 코드 ${result.exitCode}, ${time}` }
   }
 
-  const api = { describeResult, formatMs }
+  // 케이스 결과 목록에서 시간 요약: { totalMs, slowestMs, slowestIndex(0부터), count } 또는 null(시간이 있는 결과가 없음)
+  function describeTimes(caseResults) {
+    let total = 0
+    let slowest = -1
+    let slowestIndex = -1
+    let count = 0
+    ;(Array.isArray(caseResults) ? caseResults : []).forEach((r, i) => {
+      if (!r || typeof r.durationMs !== 'number' || r.status === 'skipped') return
+      count++
+      total += r.durationMs
+      if (r.durationMs > slowest) {
+        slowest = r.durationMs
+        slowestIndex = i
+      }
+    })
+    return count === 0 ? null : { totalMs: total, slowestMs: slowest, slowestIndex, count }
+  }
+
+  const api = { describeResult, describeTimes, formatMs }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   else root.runSummary = api
 })(typeof window !== 'undefined' ? window : globalThis)

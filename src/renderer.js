@@ -34,7 +34,9 @@
     prepareRun: () => editorPane.prepareRun(),
     currentFile: () => editorPane.currentFile(),
   })
+  const editorSettings = window.editorSettingsLib.createEditorSettings(window.localStorage)
   editorPane = window.createEditorPane(workspace, api, {
+    settings: editorSettings,
     footer: runPanel.element,
     onCheck: () => submitFlow.open(),
     onOpened: (problem) => runPanel.onOpened(problem),
@@ -193,6 +195,7 @@
   // 동작 등록: 단축키와 메뉴바가 같은 동작을 부른다(어떤 키에 묶을지는 keymap.js).
   const keymapDialog = window.createKeymapDialog()
   const aboutDialog = window.createAboutDialog(api)
+  const editorSettingsDialog = window.createEditorSettingsDialog(editorSettings, api)
   window.appActions.registerActions({
     chooseRoot: () => document.getElementById('root-button').click(),
     save: () => editorPane.flush(),
@@ -213,6 +216,7 @@
     prevProblem: () => openProblem(window.problemNav.neighbor(visibleLevels(), openedId, -1)),
     nextProblem: () => openProblem(window.problemNav.neighbor(visibleLevels(), openedId, 1)),
     openKeymap: () => keymapDialog.open(),
+    openEditorSettings: () => editorSettingsDialog.open(),
     about: () => aboutDialog.open(),
     undo: () => editorPane.trigger('undo'),
     redo: () => editorPane.trigger('redo'),

@@ -177,3 +177,18 @@
 .about-list { display: grid; grid-template-columns: 110px 1fr; gap: 6px 12px; margin: 8px 0 16px; font-size: 13px; }
 .about-key { color: var(--text-muted); }
 .about-value { overflow-wrap: anywhere; }
+
+.settings-list { display: grid; gap: 10px; margin: 8px 0 16px; font-size: 13px; }
+.settings-row { display: grid; grid-template-columns: 150px 1fr; align-items: center; gap: 12px; }
+.settings-input {
+  height: 30px;
+  width: 120px;
+  padding: 0 8px;
+  color: var(--text);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+}
+.settings-input:focus-visible { outline: 2px solid var(--accent); }
+.settings-check { width: 18px; height: 18px; accent-color: var(--accent); }

@@ -21,7 +21,7 @@
     return b
   }
 
-  // options: { footer: 편집기 아래에 붙일 요소(실행 패널), onOpened(problem, level, file): 파일을 열었을 때, onSaved(problem): 저장·되돌리기 직후 }
+  // options: { settings: 편집기 설정 저장소, footer: 편집기 아래에 붙일 요소(실행 패널), onOpened(problem, level, file): 파일을 열었을 때, onSaved(problem): 저장·되돌리기 직후 }
   function createEditorPane(container, api, options) {
     options = options || {}
     // 화면 부품
@@ -210,17 +210,25 @@
       editor = monaco.editor.create(host, {
         theme: themeName(),
         automaticLayout: true,
-        minimap: { enabled: false },
-        fontSize: 14,
         fontFamily: "D2Coding, Consolas, 'Malgun Gothic', monospace",
-        tabSize: 4,
+        ...(options.settings ? window.editorSettingsLib.toMonacoOptions(options.settings.get()) : { fontSize: 14, tabSize: 4, minimap: { enabled: false } }),
         scrollBeyondLastLine: false,
         mouseWheelZoom: true, // Ctrl + 휠로 글자 크기
         renderWhitespace: 'none',
         snippetSuggestions: 'top', // sout, fori 같은 단축 입력을 제안 맨 위에
         wordBasedSuggestions: 'off', // 같은 파일 이름 제안은 member-completion.js 가 직접 한다
         tabCompletion: 'on', // 단축 입력을 친 뒤 Tab 으로 펼침
+        detectIndentation: false, // 파일 내용에서 탭 칸 수를 짐작하지 않고 설정값을 쓴다
       })
+      if (options.settings) {
+        // 설정 창에서 바꾼 값을 바로 적용하고, Ctrl + 휠로 바뀐 글자 크기도 저장한다.
+        options.settings.onChange((v) => editor.updateOptions(window.editorSettingsLib.toMonacoOptions(v)))
+        editor.onDidChangeConfiguration((e) => {
+          if (!e.hasChanged(monaco.editor.EditorOption.fontSize)) return
+          const size = editor.getOption(monaco.editor.EditorOption.fontSize)
+          if (size !== options.settings.get().fontSize) options.settings.set({ fontSize: size })
+        })
+      }
       new MutationObserver(() => monaco.editor.setTheme(themeName())).observe(document.documentElement, {
         attributes: true,
         attributeFilter: ['data-theme'],
@@ -314,6 +322,7 @@
         if (!editor) return
         const size = delta === 0 ? 14 : Math.min(40, Math.max(8, editor.getOption(monaco.editor.EditorOption.fontSize) + delta))
         editor.updateOptions({ fontSize: size })
+        if (options.settings) options.settings.set({ fontSize: size })
       },
       // 지금 열려 있는 파일. 실행 패널이 무엇을 실행할지 알아내는 데 쓴다.
       currentFile: () => (current ? { problem: current.problem, level: current.level, file: current.file } : null),

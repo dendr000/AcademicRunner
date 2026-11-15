@@ -155,7 +155,8 @@
         return
       }
       const passed = done.filter((r) => r.status === 'pass').length
-      summary.textContent = `${passed} / ${cases.length} 통과`
+      const times = window.runSummary.describeTimes(done)
+      summary.textContent = `${passed} / ${cases.length} 통과` + (times ? `, 가장 느린 ${window.runSummary.formatMs(times.slowestMs)}` : '')
       summary.dataset.kind = passed === cases.length ? 'ok' : 'fail'
     }
 

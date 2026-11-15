@@ -14,6 +14,7 @@ AcademicRunner/
     features/test-cases.md    시험 케이스 설명
     features/menubar-keymap.md 메뉴바·단축키 설정 설명
     features/submit-check.md   제출 전 점검 설명
+    features/settings.md       환경 설정 설명
     features/progress.md       진행 현황 설명
     troubleshooting.md        문제 해결 기록
     filetree.md               이 문서
@@ -62,6 +63,8 @@ AcademicRunner/
     ui/shortcuts.js       동작 등록소와 키 처리
     ui/menubar.js         최상단 메뉴바
     ui/keymap-dialog.js   단축키 설정 창
+    ui/editor-settings.js 편집기 설정 기본값·검사·저장(순수 로직)
+    ui/editor-settings-dialog.js 환경 설정 창
     ui/about-dialog.js    정보 창
     ui/submit-check.js    제출 전 점검 규칙(순수 함수)
     ui/submit-flow.js     제출 전 점검 진행과 결과 창
@@ -84,6 +87,7 @@ AcademicRunner/
     run-service-function.test.js  함수 문제 실행
     problem-nav.test.js     이전/다음 문제 계산
     keymap.test.js          단축키 표·충돌·저장
+    editor-settings.test.js 편집기 설정 검사·저장·알림
     submit-check.test.js    제출 전 점검 규칙
     progress.test.js        진행 상태·통과 기록·집계
     progress-status.test.js 코드 정규화·해시, 시작 코드와 비교
