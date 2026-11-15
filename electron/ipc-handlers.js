@@ -9,6 +9,8 @@ const { createRunService } = require('./core/run-service')
 const { runners } = require('./core/runners')
 const { createSettingsStore } = require('./core/settings')
 const { progressAll, progressOne } = require('./core/progress-status')
+const path = require('node:path')
+const { createMobileControl } = require('./core/mobile-control')
 
 function registerIpcHandlers(getWindow, appId) {
   const settings = createSettingsStore(app.getPath('userData'))
@@ -19,6 +21,16 @@ function registerIpcHandlers(getWindow, appId) {
     version: app.getVersion(),
     appId,
   }))
+
+  // 폰 접속(내장 웹 서버, 읽기 전용). 기본 꺼짐. 앱 창이 열려 있는 동안만 동작한다.
+  const mobile = createMobileControl({ settings, staticDir: path.join(__dirname, '..', 'src', 'mobile') })
+  mobile.startIfEnabled()
+  ipcMain.handle('mobile:status', () => mobile.status())
+  ipcMain.handle('mobile:setEnabled', (_e, on) => mobile.setEnabled(on === true))
+  ipcMain.handle('mobile:regenerate', () => mobile.regenerate())
+  app.on('will-quit', () => {
+    mobile.stop()
+  })
 
   ipcMain.handle('settings:get', () => settings.get())
   // 실행 시간 제한(초). 범위 검사는 settings.set 이 한다(1~120, 벗어나면 이전 값 유지).

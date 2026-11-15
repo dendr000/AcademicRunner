@@ -192,3 +192,11 @@
 }
 .settings-input:focus-visible { outline: 2px solid var(--accent); }
 .settings-check { width: 18px; height: 18px; accent-color: var(--accent); }
+
+.mobile-section { margin: 4px 0 16px; padding-top: 12px; border-top: 1px solid var(--border); }
+.mobile-title { margin: 0 0 8px; font-size: 14px; }
+.mobile-info { display: grid; gap: 8px; margin: 8px 0; }
+.mobile-url { display: flex; gap: 8px; }
+.mobile-url-input { flex: 1; width: auto; min-width: 0; font-size: 12px; }
+.mobile-msg[data-kind="fail"] { color: var(--danger); }
+.about-box { max-height: calc(100vh - 32px); overflow-y: auto; }

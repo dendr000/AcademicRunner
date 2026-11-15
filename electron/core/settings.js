@@ -9,6 +9,10 @@ const DEFAULTS = {
   root: 'C:\\dev\\AcademicTest',
   // 실행 시간 제한(초). 무한 반복 풀이를 끊는다.
   timeoutSec: 10,
+  // 폰 접속(내장 웹 서버). 기본은 꺼짐. 토큰은 이 설정 파일에만 둔다(코드·문서에 쓰지 않음).
+  mobileEnabled: false,
+  mobilePort: 8787,
+  mobileToken: '',
 }
 
 const MIN_TIMEOUT_SEC = 1
@@ -17,6 +21,9 @@ const MAX_TIMEOUT_SEC = 120
 function validTimeout(value) {
   return typeof value === 'number' && Number.isFinite(value) && value >= MIN_TIMEOUT_SEC && value <= MAX_TIMEOUT_SEC
 }
+
+const validPort = (v) => Number.isInteger(v) && v >= 1024 && v <= 65535
+const validToken = (v) => typeof v === 'string' && /^[A-Za-z0-9_-]{16,200}$/.test(v)
 
 function createSettingsStore(dir) {
   const file = path.join(dir, 'settings.json')
@@ -34,6 +41,9 @@ function createSettingsStore(dir) {
   function get() {
     const merged = { ...DEFAULTS, ...read() }
     if (!validTimeout(merged.timeoutSec)) merged.timeoutSec = DEFAULTS.timeoutSec // 깨진 값은 기본값으로
+    if (typeof merged.mobileEnabled !== 'boolean') merged.mobileEnabled = DEFAULTS.mobileEnabled
+    if (!validPort(merged.mobilePort)) merged.mobilePort = DEFAULTS.mobilePort
+    if (!validToken(merged.mobileToken)) merged.mobileToken = DEFAULTS.mobileToken
     return merged
   }
 
@@ -41,6 +51,9 @@ function createSettingsStore(dir) {
     const next = { ...read() }
     if (typeof patch.root === 'string' && patch.root.trim() !== '') next.root = patch.root
     if (validTimeout(patch.timeoutSec)) next.timeoutSec = patch.timeoutSec
+    if (typeof patch.mobileEnabled === 'boolean') next.mobileEnabled = patch.mobileEnabled
+    if (validPort(patch.mobilePort)) next.mobilePort = patch.mobilePort
+    if (validToken(patch.mobileToken)) next.mobileToken = patch.mobileToken
     fs.mkdirSync(dir, { recursive: true })
     const tmp = file + '.tmp'
     fs.writeFileSync(tmp, JSON.stringify(next, null, 2), 'utf8')

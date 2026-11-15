@@ -15,6 +15,7 @@ AcademicRunner/
     features/menubar-keymap.md 메뉴바·단축키 설정 설명
     features/submit-check.md   제출 전 점검 설명
     features/settings.md       환경 설정 설명
+    features/mobile-access.md  폰 접속 설명
     features/progress.md       진행 현황 설명
     troubleshooting.md        문제 해결 기록
     filetree.md               이 문서
@@ -24,7 +25,10 @@ AcademicRunner/
     ipc-handlers.js    화면 요청 처리(앱 정보, 설정, 폴더 선택, 문제 스캔)
     core/
       scanner.js       문제 폴더를 읽어 단계·문제·파일 목록 생성
-      settings.js      설정(문제 폴더 경로) 저장·불러오기
+      settings.js      설정(문제 폴더 경로, 시간 제한, 폰 접속) 저장·불러오기
+      mobile-auth.js   폰 접속 보안 부품(사설 주소 검사, 토큰, 실패 횟수 제한)
+      mobile-server.js 폰용 읽기 전용 웹 서버
+      mobile-control.js 폰 접속 켜기·끄기와 접속 주소
       solution-files.js  풀이 파일 읽기·저장·되돌리기(경로 검사 포함)
       process-runner.js  외부 프로그램 실행(시간 제한·출력 상한·중지)
       run-service.js   임시 폴더에서 컴파일·실행하고 정리
@@ -65,6 +69,8 @@ AcademicRunner/
     ui/keymap-dialog.js   단축키 설정 창
     ui/editor-settings.js 편집기 설정 기본값·검사·저장(순수 로직)
     ui/editor-settings-dialog.js 환경 설정 창
+    ui/mobile-section.js  환경 설정 창의 폰 접속 부분
+    mobile/               폰 브라우저용 화면(index.html, m.css, m.js)
     ui/about-dialog.js    정보 창
     ui/submit-check.js    제출 전 점검 규칙(순수 함수)
     ui/submit-flow.js     제출 전 점검 진행과 결과 창
@@ -88,6 +94,7 @@ AcademicRunner/
     problem-nav.test.js     이전/다음 문제 계산
     keymap.test.js          단축키 표·충돌·저장
     editor-settings.test.js 편집기 설정 검사·저장·알림
+    mobile.test.js          폰 접속(보안·서버·설정·제어)
     submit-check.test.js    제출 전 점검 규칙
     progress.test.js        진행 상태·통과 기록·집계
     progress-status.test.js 코드 정규화·해시, 시작 코드와 비교

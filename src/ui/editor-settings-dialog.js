@@ -94,6 +94,7 @@
       const list = el('div', 'settings-list')
       list.append(row('글자 크기 (' + lib.FONT_MIN + '~' + lib.FONT_MAX + ')', font), row('탭 칸 수', tab), row('긴 줄 바꿈', wrapBox), row('미니맵', mini), row('실행 시간 제한 (1~120초)', limit))
       box.appendChild(list)
+      box.appendChild(window.createMobileSection(api).element)
 
       // 다른 곳(Ctrl + 휠, 단축키)에서 바뀐 값도 창에 반영한다.
       off = settings.onChange((v) => {
