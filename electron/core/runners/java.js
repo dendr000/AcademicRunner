@@ -12,6 +12,19 @@ function publicClassName(source) {
   return m ? m[1] : null
 }
 
+// 파일 맨 앞(주석 제외)의 package xxx.yyy; 한 줄을 같은 길이의 공백으로 바꾼다.
+function stripPackage(source) {
+  let out = ''
+  let rest = source
+  // 앞쪽 주석·공백은 그대로 두고 첫 코드가 package 일 때만 지운다.
+  const lead = /^(?:\s|\/\/[^\n]*|\/\*[\s\S]*?\*\/)*/.exec(rest)[0]
+  out = lead
+  rest = rest.slice(lead.length)
+  const m = /^package\s+[\w.$]+\s*;/.exec(rest)
+  if (m) rest = ' '.repeat(m[0].length) + rest.slice(m[0].length)
+  return out + rest
+}
+
 const RUN_FLAGS = ['-Dfile.encoding=UTF-8', '-Dstdout.encoding=UTF-8', '-Dstderr.encoding=UTF-8']
 
 // job: { source, fileName, mode, dir, kind, cases }, tools: { java() -> { javac, java, version } | null }
@@ -25,7 +38,9 @@ function prepare(job, tools) {
   // 파일 이름은 공개 클래스 이름과 같아야 컴파일된다. 공개 클래스가 없으면 원래 파일 이름을 쓴다.
   const sourceName = (className || base) + '.java'
   const mainClass = className || base
-  const writes = [{ name: sourceName, content: job.source }]
+  // package 선언이 있으면 클래스가 하위 폴더에 생겨 java 가 못 찾으므로 공백으로 지운다(줄 번호는 그대로).
+  const content = stripPackage(job.source)
+  const writes = [{ name: sourceName, content }]
   const compileArgs = ['-encoding', 'UTF-8', '-Xlint:none', '-d', job.dir, path.join(job.dir, sourceName)]
   const steps = []
 
@@ -57,4 +72,4 @@ function prepare(job, tools) {
   return { writes, steps, toolVersion: jdk.version }
 }
 
-module.exports = { language: 'java', prepare, publicClassName }
+module.exports = { language: 'java', prepare, publicClassName, stripPackage }

@@ -56,6 +56,31 @@ test('publicClassName: 공개 클래스를 찾고 주석 속 이름은 무시한
   assert.strictEqual(javaRunner.publicClassName('/* public class Fake */ class Solution {}'), null)
 })
 
+test('stripPackage: package 선언만 같은 길이 공백으로 지우고 줄 번호는 유지한다', () => {
+  const src = '// 설명\npackage a.b;\npublic class Main {}\n'
+  const out = javaRunner.stripPackage(src)
+  assert.strictEqual(out.length, src.length)
+  assert.ok(!out.includes('package'))
+  assert.strictEqual(out.split('\n').length, src.split('\n').length)
+  assert.strictEqual(javaRunner.stripPackage('class A { String package_x; }'), 'class A { String package_x; }')
+  assert.strictEqual(javaRunner.stripPackage('import java.util.*;\nclass A {}'), 'import java.util.*;\nclass A {}')
+})
+
+test('package 선언이 있는 파일도 실행된다', { skip: skipNoJdk }, async () => {
+  const f = makeFixture()
+  try {
+    const src = 'package demo.app;\npublic class Main {\n  public static void main(String[] a) { System.out.println("ok"); }\n}\n'
+    const dir = path.join(f.root, 'Lv0_기초', '05_패키지')
+    fs.mkdirSync(dir, { recursive: true })
+    fs.writeFileSync(path.join(dir, 'Main.java'), src)
+    const r = await f.service.start(req(f.root, 'Lv0_기초/05_패키지', 'Main.java')).done
+    assert.strictEqual(r.ok, true, JSON.stringify(r).slice(0, 300))
+    assert.match(r.stdout, /ok/)
+  } finally {
+    f.cleanup()
+  }
+})
+
 test('JDK 가 없으면 TOOL_MISSING 안내를 준다', async () => {
   const f = makeFixture()
   try {
