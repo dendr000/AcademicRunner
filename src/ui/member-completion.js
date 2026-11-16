@@ -12,6 +12,12 @@
     javascript: 'async await break case catch class const continue default do else export extends false finally for function if import in instanceof let new null return super switch this throw true try typeof undefined var void while yield console Math Number String Array Object JSON Map Set Promise parseInt parseFloat',
   }
 
+  // 두 단어 이상으로 한 번에 넣는 SQL 문법. ORDER 를 치면 ORDER BY 가 통째로 나온다.
+  const PHRASES = {
+    sql: ['ORDER BY', 'GROUP BY', 'PARTITION BY', 'INSERT INTO', 'DELETE FROM', 'LEFT JOIN', 'RIGHT JOIN', 'INNER JOIN', 'LEFT OUTER JOIN', 'RIGHT OUTER JOIN', 'FULL OUTER JOIN', 'CROSS JOIN', 'NATURAL JOIN', 'IS NULL', 'IS NOT NULL', 'NOT NULL', 'NOT IN', 'NOT LIKE', 'NOT EXISTS', 'NOT BETWEEN', 'UNION ALL', 'PRIMARY KEY', 'FOREIGN KEY', 'CREATE TABLE', 'CREATE VIEW', 'CREATE INDEX', 'DROP TABLE', 'ALTER TABLE', 'ORDER BY DESC', 'ON DELETE CASCADE', 'ROWS BETWEEN'],
+  }
+  const keywordList = (language) => KEYWORDS[language].split(' ').concat(PHRASES[language] || [])
+
   // 자주 쓰는 예약어·클래스는 이 순서로 먼저 보인다(언어마다 따로). 나머지는 이름순.
   const JAVA_COMMON = 'return if for while else int String new break continue public private static void class true false null System Math List ArrayList HashMap switch case try catch boolean double long char'
   const C_COMMON = 'return if for while else int char double float long void struct break continue switch case include define printf scanf sizeof const unsigned static true false NULL string vector cout cin endl std'
@@ -21,7 +27,7 @@
     cpp: C_COMMON.split(' '),
     python: 'return if elif else for while in range print input len def import from class True False None and or not break continue int str float list dict set sorted enumerate zip sum min max abs try except with as pass'.split(' '),
     javascript: 'const let var function return if else for while of in console switch case break continue true false null undefined new class this async await Math JSON Array Object String Number try catch'.split(' '),
-    sql: 'SELECT FROM WHERE AND OR NOT IN GROUP BY ORDER HAVING ASC DESC LIMIT JOIN INNER LEFT ON AS DISTINCT COUNT SUM AVG MAX MIN LIKE BETWEEN IS NULL CASE WHEN THEN ELSE END INSERT INTO VALUES UPDATE SET DELETE CREATE TABLE UNION WITH OVER PARTITION ROUND'.split(' '),
+    sql: ['SELECT', 'FROM', 'WHERE', 'AND', 'GROUP BY', 'ORDER BY', 'HAVING', 'ASC', 'DESC', 'LIMIT', 'JOIN', 'LEFT JOIN', 'INNER JOIN', 'ON', 'AS', 'DISTINCT', 'COUNT', 'SUM', 'AVG', 'MAX', 'MIN', 'IN', 'NOT IN', 'LIKE', 'BETWEEN', 'IS NULL', 'IS NOT NULL', 'NULL', 'OR', 'NOT', 'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'INSERT INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE FROM', 'CREATE TABLE', 'PRIMARY KEY', 'FOREIGN KEY', 'NOT NULL', 'UNION ALL', 'UNION', 'WITH', 'OVER', 'PARTITION BY', 'ROUND', 'EXISTS', 'ALTER TABLE', 'DROP TABLE', 'LEFT OUTER JOIN', 'CROSS JOIN'],
   }
   const rank = (name, language) => {
     const list = COMMON[language] || COMMON.java
@@ -37,13 +43,13 @@
   // 점이 없을 때의 제안: 같은 파일에 나온 이름(변수·메서드)과 언어 예약어. 언어 서버가 없어도 Ctrl+Space 로 뜬다.
   function wordSuggestions(monaco, model, position, word, language) {
     if (!word.word) return []
-    const names = new Set(KEYWORDS[language].split(' '))
+    const names = new Set(keywordList(language))
     const found = model.getValue().match(/[A-Za-z_$][A-Za-z0-9_$]*/g) || []
     for (const n of found) names.add(n)
     names.delete(word.word) // 지금 치는 글자 자체는 뺀다(다른 곳에 같은 이름이 있으면 아래에서 다시 들어옴)
     if (found.filter((n) => n === word.word).length > 1) names.add(word.word)
     const range = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn }
-    const kw = new Set(KEYWORDS[language].split(' '))
+    const kw = new Set(keywordList(language))
     const source = model.getValue()
     return [...names].map((name) => ({
       label: name,
@@ -52,7 +58,11 @@
       kind: kw.has(name) ? monaco.languages.CompletionItemKind.Keyword : monaco.languages.CompletionItemKind.Variable,
       insertText: name,
       // 정렬: 파일 안의 변수·이름(0) -> 단축 입력(1, snippets.js) -> 언어 키워드(2)
-      sortText: kw.has(name) ? '2' + rank(name, language) : '0' + name,
+      // SQL 은 자주 쓰는 예약어(ORDER BY, WHERE 등)가 단축 입력(ord 등)보다 위에 온다. 나머지 언어는 단축 입력이 먼저.
+      sortText: kw.has(name) ? (language === 'sql' && COMMON.sql.includes(name) ? '05' : '2') + rank(name, language) : '0' + name,
+      // 글자 수가 같은 정확한 일치(OR)가 더 긴 문법(ORDER BY)보다 위로 새치기하지 않게, 순서는 위의 sortText 가 정한다.
+      // SQL 은 예약어를 소문자로 비교해, 소문자 단축 입력(ord 등)과 같은 점수가 되게 한다(대소문자 일치 가점 차이 제거).
+      filterText: kw.has(name) ? (language === 'sql' ? name.toLowerCase() : name) + ' ' : undefined,
       range,
     }))
   }

@@ -1,5 +1,13 @@
 # 업데이트 내역 (CHANGELOG)
 
+## [1.23.0] - 2026-11-16 13:35
+
+### 추가 (Added)
+- SQL 자동완성이 여러 단어 문법을 한 번에 제안함: ORDER BY, GROUP BY, INSERT INTO, DELETE FROM, LEFT/RIGHT/INNER JOIN, IS NULL, IS NOT NULL, NOT IN, UNION ALL, CREATE TABLE, PRIMARY KEY 등. 고르면 단어 사이 공백까지 그대로 들어감
+
+### 변경 (Changed)
+- SQL 에서 `or` 를 치면 OR 보다 ORDER BY 가, `gr` 은 GROUP BY, `le` 는 LEFT JOIN, `is` 는 IS NULL, `sel` 은 SELECT 가 맨 위에 나옴(자주 쓰는 문법 우선, `ord` 같은 단축 입력은 그 아래)
+
 ## [1.22.1] - 2026-11-16 14:20
 
 ### 수정 (Fixed)
