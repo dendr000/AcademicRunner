@@ -42,7 +42,8 @@
 
   // 점이 없을 때의 제안: 같은 파일에 나온 이름(변수·메서드)과 언어 예약어. 언어 서버가 없어도 Ctrl+Space 로 뜬다.
   function wordSuggestions(monaco, model, position, word, language) {
-    if (!word.word) return []
+    // 글자 없이(Ctrl+Space) 여는 제안은 SQL 만 한다: ORDER BY 뒤처럼 열 이름(파일에 나온 이름)을 고르기 위해서다.
+    if (!word.word && language !== 'sql') return []
     const names = new Set(keywordList(language))
     const found = model.getValue().match(/[A-Za-z_$][A-Za-z0-9_$]*/g) || []
     for (const n of found) names.add(n)
@@ -58,8 +59,8 @@
       kind: kw.has(name) ? monaco.languages.CompletionItemKind.Keyword : monaco.languages.CompletionItemKind.Variable,
       insertText: name,
       // 정렬: 파일 안의 변수·이름(0) -> 단축 입력(1, snippets.js) -> 언어 키워드(2)
-      // SQL 은 자주 쓰는 예약어(ORDER BY, WHERE 등)가 단축 입력(ord 등)보다 위에 온다. 나머지 언어는 단축 입력이 먼저.
-      sortText: kw.has(name) ? (language === 'sql' && COMMON.sql.includes(name) ? '05' : '2') + rank(name, language) : '0' + name,
+      // SQL 은 자주 쓰는 예약어(ORDER BY, WHERE 등)를 '10..' 으로 두어, 파일 안 이름(0)보다는 뒤, 단축 입력('1ord' 등 글자)보다는 앞에 온다.
+      sortText: kw.has(name) ? (language === 'sql' && COMMON.sql.includes(name) ? '10' : '2') + rank(name, language) : '0' + name,
       // 글자 수가 같은 정확한 일치(OR)가 더 긴 문법(ORDER BY)보다 위로 새치기하지 않게, 순서는 위의 sortText 가 정한다.
       // SQL 은 예약어를 소문자로 비교해, 소문자 단축 입력(ord 등)과 같은 점수가 되게 한다(대소문자 일치 가점 차이 제거).
       filterText: kw.has(name) ? (language === 'sql' ? name.toLowerCase() : name) + ' ' : undefined,
