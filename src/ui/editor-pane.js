@@ -218,6 +218,7 @@
         renderWhitespace: 'none',
         snippetSuggestions: 'inline', // 단축 입력은 다른 제안과 섞어 정렬한다(변수가 먼저, 아래 sortText 참고)
         wordBasedSuggestions: 'off', // 같은 파일 이름 제안은 member-completion.js 가 직접 한다
+        suggestSelection: 'first', // 최근에 고른 항목을 먼저 고르지 않고 항상 맨 위 제안을 고른다
         tabCompletion: 'on', // 단축 입력을 친 뒤 Tab 으로 펼침
         detectIndentation: false, // 파일 내용에서 탭 칸 수를 짐작하지 않고 설정값을 쓴다
       })

@@ -9,6 +9,13 @@
     javascript: 'async await break case catch class const continue default do else export extends false finally for function if import in instanceof let new null return super switch this throw true try typeof undefined var void while yield console Math Number String Array Object JSON Map Set Promise parseInt parseFloat',
   }
 
+  // 자주 쓰는 예약어·클래스는 이 순서로 먼저 보인다. 나머지는 이름순.
+  const COMMON = 'return if for while else int String new break continue public private static void class true false null System Math List ArrayList HashMap switch case try catch boolean double long char'.split(' ')
+  const rank = (name) => {
+    const i = COMMON.indexOf(name)
+    return i < 0 ? '99' + name : String(i).padStart(2, '0')
+  }
+
   function typeLabel(type) {
     if (!type) return undefined
     return type === 'array' ? '배열' : type
@@ -32,7 +39,7 @@
       kind: kw.has(name) ? monaco.languages.CompletionItemKind.Keyword : monaco.languages.CompletionItemKind.Variable,
       insertText: name,
       // 정렬: 파일 안의 변수·이름(0) -> 단축 입력(1, snippets.js) -> 언어 키워드(2)
-      sortText: (kw.has(name) ? '2' : '0') + name,
+      sortText: kw.has(name) ? '2' + rank(name) : '0' + name,
       range,
     }))
   }
