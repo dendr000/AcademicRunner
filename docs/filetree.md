@@ -2,7 +2,7 @@
 
 ```text
 AcademicRunner/
-  README.md  CHANGELOG.md  LICENSE  package.json
+  README.md  CLAUDE.md  CHANGELOG.md  LICENSE  package.json
   assets/icons/        화면에서 쓰는 아이콘(sun, moon, monitor, menu)
   build/               앱 아이콘 (icon.svg 원본, icon.ico, icon.png)
   docs/
@@ -117,6 +117,7 @@ AcademicRunner/
     sql-preset-store.test.js  SQL 기본 데이터 저장소와 묶음 선택
     sql-tables.test.js      SQL 표 보기(표·열·행 조사)
     samples.test.js         샘플 문제 폴더와 기본 문제 폴더 선택
+    repo-rules.test.js      지문 파일·외부 문제 사이트 연동이 없는지 점검
     member-data.test.js     변수 종류 짐작·점 자동 완성 목록
     new-completion.test.js  new 뒤 제안·꺾쇠 자동 닫기
     param-hints.test.js     매개변수 이름 힌트
