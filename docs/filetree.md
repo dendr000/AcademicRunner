@@ -39,7 +39,7 @@ AcademicRunner/
       output-compare.js  기대/실제 출력 비교
       json-compare.js  함수 문제 반환값(JSON) 비교
       harness/java-harness.js  Java 함수 문제 호출 코드 생성
-      runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js, c-family.js, sql.js, sql-script.cjs)
+      runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js, c-family.js, sql.js, sql-script.cjs, sql-presets/ 기본 데이터 .sql)
   scripts/
     make-icon.cjs      icon.svg 에서 icon.ico 생성
     package-win.js     exe 패키징(허용 목록 방식)

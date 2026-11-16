@@ -70,7 +70,7 @@ test('SQL: 문자열 안의 세미콜론과 주석은 문장을 나누지 않는
 })
 
 test('SQL: 표가 없으면 입력 탭 안내와 함께 실패한다', { skip: skipNoSqlite }, async () => {
-  const f = makeFixture([['Lv0_기초/03_없음', 'Solution.sql', 'SELECT * FROM student;']])
+  const f = makeFixture([['Lv0_기초/03_없음', 'Solution.sql', 'SELECT * FROM no_such_table_x;']])
   try {
     const r = await f.service.start(req(f.root, 'Lv0_기초/03_없음', 'Solution.sql')).done
     assert.strictEqual(r.ok, false)
@@ -83,7 +83,7 @@ test('SQL: 표가 없으면 입력 탭 안내와 함께 실패한다', { skip: s
 
 test('SQL: 컴파일 확인은 문법 오류만 잡고 표가 없는 것은 넘긴다', { skip: skipNoSqlite }, async () => {
   const f = makeFixture([
-    ['Lv0_기초/04_정상', 'Solution.sql', 'SELECT * FROM student;'],
+    ['Lv0_기초/04_정상', 'Solution.sql', 'SELECT * FROM no_such_table_x;'],
     ['Lv0_기초/05_오타', 'Solution.sql', 'SELEC * FROM student;'],
   ])
   try {
@@ -141,4 +141,68 @@ test('C/C++: 함수 문제를 실행하려 하면 NOT_SUPPORTED, 컴파일 확�
 
 test('러너 목록에 c, cpp, sql 이 들어 있다', () => {
   for (const l of ['c', 'cpp', 'sql']) assert.ok(runners[l], l)
+})
+
+test('SQL 기본 데이터: 학교 표 이름을 쓰면 SELECT 만 적어도 실행된다', { skip: skipNoSqlite }, async () => {
+  const f = makeFixture([['Lv0_기초/10_학교', 'Solution.sql', 'SELECT name, dept FROM student ORDER BY id LIMIT 2;']])
+  try {
+    const r = await f.service.start(req(f.root, 'Lv0_기초/10_학교', 'Solution.sql')).done
+    assert.strictEqual(r.ok, true, JSON.stringify(r).slice(0, 300))
+    assert.strictEqual(r.stdout.trim(), 'name\tdept\n김민준\t컴퓨터공학\n이서연\t경영')
+    assert.match(r.toolVersion || '', /기본 데이터/)
+  } finally {
+    f.cleanup()
+  }
+})
+
+test('SQL 기본 데이터: 쇼핑 표도 쓰고, 입력 탭의 INSERT 가 그 위에 더해진다', { skip: skipNoSqlite }, async () => {
+  const f = makeFixture([['Lv1_입문/01_쇼핑', 'Solution.sql', 'SELECT COUNT(*) AS n FROM customers;']])
+  try {
+    const base = await f.service.start(req(f.root, 'Lv1_입문/01_쇼핑', 'Solution.sql')).done
+    assert.strictEqual(base.stdout.trim(), 'n\n12')
+    const more = await f.service.start(req(f.root, 'Lv1_입문/01_쇼핑', 'Solution.sql', { input: "INSERT INTO customers(id,name) VALUES (99,'추가');" })).done
+    assert.strictEqual(more.stdout.trim(), 'n\n13')
+  } finally {
+    f.cleanup()
+  }
+})
+
+test('SQL 기본 데이터: 풀이에 CREATE TABLE 이 있으면 기본 데이터를 넣지 않는다', { skip: skipNoSqlite }, async () => {
+  const f = makeFixture([['Lv0_기초/11_직접', 'Solution.sql', 'CREATE TABLE student(id INTEGER, name TEXT);\nINSERT INTO student VALUES (1,\'가\');\nSELECT COUNT(*) AS n FROM student;']])
+  try {
+    const r = await f.service.start(req(f.root, 'Lv0_기초/11_직접', 'Solution.sql')).done
+    assert.strictEqual(r.ok, true, JSON.stringify(r).slice(0, 300))
+    assert.strictEqual(r.stdout.trim(), 'n\n1')
+  } finally {
+    f.cleanup()
+  }
+})
+
+test('SQL 기본 데이터: 주석에만 적힌 표 이름은 무시하고, 없는 열은 컴파일 확인이 잡는다', { skip: skipNoSqlite }, async () => {
+  const { pickPresets } = require('../electron/core/runners/sql')
+  assert.deepStrictEqual(pickPresets('-- student 표\nSELECT 1;').map((p) => p.name), [])
+  assert.deepStrictEqual(pickPresets('SELECT * FROM orders JOIN student').map((p) => p.name), ['school', 'shop'])
+  const f = makeFixture([['Lv0_기초/12_열오타', 'Solution.sql', 'SELECT nam FROM student;']])
+  try {
+    const bad = await f.service.start(req(f.root, 'Lv0_기초/12_열오타', 'Solution.sql', { mode: 'compile' })).done
+    assert.strictEqual(bad.ok, false)
+  } finally {
+    f.cleanup()
+  }
+})
+
+test('SQL 기본 데이터: 대문자 STUDENT/DEPT 는 DBMS 이론 표, 주석 지시로 직접 고를 수 있다', { skip: skipNoSqlite }, async () => {
+  const { pickPresets } = require('../electron/core/runners/sql')
+  assert.deepStrictEqual(pickPresets('SELECT * FROM STUDENT s JOIN DEPT d ON s.dept = d.dept').map((p) => p.name), ['dbms'])
+  assert.deepStrictEqual(pickPresets('SELECT * FROM student').map((p) => p.name), ['school'])
+  assert.deepStrictEqual(pickPresets('-- @data: none\nSELECT * FROM student').map((p) => p.name), [])
+  assert.deepStrictEqual(pickPresets('-- @data: dbms\nSELECT * FROM student').map((p) => p.name), ['dbms'])
+  const f = makeFixture([['Lv0_기초/13_이론', 'Solution.sql', "-- 이론 문제\nBEGIN;\nDELETE FROM STUDENT WHERE dept = 'IT';\nROLLBACK;\nSELECT COUNT(*) AS n FROM STUDENT;\nSELECT s.name, d.dname FROM STUDENT s LEFT JOIN DEPT d ON s.dept = d.dept WHERE s.id = 4;"]])
+  try {
+    const r = await f.service.start(req(f.root, 'Lv0_기초/13_이론', 'Solution.sql')).done
+    assert.strictEqual(r.ok, true, JSON.stringify(r).slice(0, 300))
+    assert.strictEqual(r.stdout.trim(), 'n\n5\n\nname\tdname\n최유나\tNULL')
+  } finally {
+    f.cleanup()
+  }
 })

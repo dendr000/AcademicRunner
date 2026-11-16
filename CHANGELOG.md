@@ -1,5 +1,13 @@
 # 업데이트 내역 (CHANGELOG)
 
+## [1.21.0] - 2026-11-16 13:10
+
+### 추가 (Added)
+- SQL 문제에 학원 사이트와 같은 기본 데이터를 미리 넣어 둠: 풀이에 student·course·enroll(사이트 SQL Lv0), customers·products·orders·order_items(사이트 SQL Lv1~5), 대문자 STUDENT·DEPT(DBMS 이론 점검의 참고 테이블)가 나오면 그 표를 자동으로 만들어 줌. SELECT 문만 적어도 바로 실행됨
+- 입력 탭에 적은 INSERT·CREATE 는 기본 데이터 위에 더해서 먼저 실행됨(풀이나 입력에 CREATE TABLE 이 있으면 기본 데이터는 넣지 않음)
+- 풀이 첫머리에 `-- @data: school`, `-- @data: shop`, `-- @data: dbms`, `-- @data: none` 주석을 적어 기본 데이터를 직접 고를 수 있음
+- 실행 결과 줄에 어떤 기본 데이터를 썼는지 표시
+
 ## [1.20.1] - 2026-11-16 11:40
 
 ### 수정 (Fixed)

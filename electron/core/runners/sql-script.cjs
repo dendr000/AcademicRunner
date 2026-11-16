@@ -48,14 +48,24 @@ function splitStatements(sql) {
   return out
 }
 
+const stripComments = (s) => String(s).replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/--[^\n]*/g, ' ')
+
 const show = (v) => (v === null || v === undefined ? 'NULL' : typeof v === 'bigint' ? v.toString() : v instanceof Uint8Array ? '[BLOB ' + v.length + 'B]' : String(v))
 
 function main() {
   const file = process.argv[2]
-  const check = process.argv[3] === '--check'
+  const check = process.argv.includes('--check')
+  const presetFiles = []
+  for (let i = 3; i < process.argv.length; i++) if (process.argv[i] === '--preset' && process.argv[i + 1]) presetFiles.push(process.argv[++i])
   const setup = fs.readFileSync(0, 'utf8')
   const source = fs.readFileSync(file, 'utf8')
   const db = new DatabaseSync(':memory:')
+  // 풀이나 입력 탭에서 직접 표를 만들면(CREATE TABLE) 기본 데이터는 넣지 않는다(같은 이름 표가 겹치지 않게).
+  const ownTables = /\bCREATE\s+TABLE\b/i.test(stripComments(setup + '\n' + source))
+  const usePresets = !ownTables && presetFiles.length > 0
+  if (usePresets) {
+    for (const p of presetFiles) db.exec(fs.readFileSync(p, 'utf8'))
+  }
   if (setup.trim() !== '') {
     try {
       db.exec(setup)
@@ -73,11 +83,11 @@ function main() {
   for (let n = 0; n < statements.length; n++) {
     try {
       if (check) {
-        // 문법 확인: 빈 DB 라 표가 없다는 오류는 문법 문제가 아니므로 넘긴다.
+        // 문법 확인: 기본 데이터가 없는 빈 DB 에서는 표가 없다는 오류를 문법 문제로 보지 않고 넘긴다.
         try {
           db.prepare(statements[n])
         } catch (e) {
-          if (!/no such (table|column)/i.test(e.message)) throw e
+          if (usePresets || !/no such (table|column)/i.test(e.message)) throw e
         }
         continue
       }
@@ -95,7 +105,11 @@ function main() {
       }
     } catch (e) {
       let hint = ''
-      if (/no such table|no such column/i.test(e.message)) hint = '\n(힌트: 입력 탭에 CREATE TABLE 과 INSERT 문으로 시험용 표를 먼저 만들어 두세요)'
+      if (/no such table|no such column/i.test(e.message)) {
+        hint = usePresets
+          ? '\n(힌트: 기본 데이터에 없는 표·열 이름입니다. 이름을 확인하거나 입력 탭에 CREATE TABLE 로 직접 만드세요)'
+          : '\n(힌트: 입력 탭에 CREATE TABLE 과 INSERT 문으로 시험용 표를 먼저 만들어 두세요)'
+      }
       process.stderr.write('SQL 오류 (' + (n + 1) + '번째 문): ' + e.message + hint + '\n')
       process.exit(1)
     }
