@@ -24,6 +24,25 @@ function copyDir(from, to, relative) {
   }
 }
 
+// JS 파일을 열면 편집기가 언어 서비스(vs/language/typescript/tsMode)를 불러오려 한다. 그 폴더는 용량 때문에 뺐으므로,
+// 아무 일도 하지 않는 빈 모듈을 대신 둔다(없으면 파일 열 때마다 "파일을 찾을 수 없음" 오류가 난다). 글자 색은 이것과 무관하다.
+const TS_MODE_STUB = [
+  "define('vs/language/typescript/tsMode', ['require', 'exports'], function (require, exports) {",
+  "  const none = function () {}",
+  "  exports.setupTypeScript = none",
+  "  exports.setupJavaScript = none",
+  "  exports.getTypeScriptWorker = function () { return Promise.reject(new Error('언어 서비스가 들어 있지 않습니다')) }",
+  "  exports.getJavaScriptWorker = exports.getTypeScriptWorker",
+  "})",
+  "",
+].join('\n')
+
+function writeTsModeStub() {
+  const dir = path.join(target, 'language', 'typescript')
+  fs.mkdirSync(dir, { recursive: true })
+  fs.writeFileSync(path.join(dir, 'tsMode.js'), TS_MODE_STUB)
+}
+
 function main() {
   if (!fs.existsSync(path.join(source, 'loader.js'))) {
     console.log('monaco-editor 가 아직 설치되지 않아 건너뜁니다 (npm install 후 npm run vendor).')
@@ -31,6 +50,7 @@ function main() {
   }
   fs.rmSync(target, { recursive: true, force: true })
   copyDir(source, target, '')
+  writeTsModeStub()
   console.log('monaco-editor 를 복사했습니다:', path.relative(root, target))
 }
 

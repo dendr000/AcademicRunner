@@ -24,6 +24,11 @@
 - 원인: Claude 데스크톱 앱이 `app.asar` 를 열어 두고 있었다(Windows 잠금 조회 API `rstrtmgr` 로 확인). AcademicRunner 프로세스는 없었고, 폴더 이름 바꾸기도 접근 거부로 막혔다. 같은 증상이 탐색기 미리보기·백신 검사에서도 생길 수 있다.
 - 해결: 잠금이 풀린 뒤 `npm run dist:win` 과 `npm run verify:exe` 를 다시 실행하니 통과했다. 계속 막히면 잠근 프로그램을 닫거나 다시 시작한 뒤 재시도한다. 어떤 프로그램이 잡고 있는지는 위 `rstrtmgr` 로 알아낼 수 있다.
 
+## JavaScript 파일을 열 때 편집기 부품을 찾지 못한다는 오류 (2026-11-16, 해결)
+- 증상: JS 풀이를 열 때마다 개발자 도구 콘솔에 `vs/language/typescript/tsMode.js net::ERR_FILE_NOT_FOUND` 와 Uncaught Error 가 쌓임(동작은 되지만 오류가 남음).
+- 원인: 용량 때문에 Monaco 의 `language` 폴더(TS 언어 서비스, 약 7MB)를 vendor 복사에서 뺐는데, 편집기가 JS 모델을 만들 때 그 안의 tsMode 를 불러오려 함.
+- 해결: `scripts/vendor-monaco.js` 가 복사 뒤에 아무 일도 하지 않는 빈 `tsMode.js` 를 `src/vendor/monaco/vs/language/typescript/` 에 만든다. 글자 색 입히기는 이것과 무관하다. `npm run vendor` 를 다시 하면 같은 빈 모듈이 만들어진다.
+
 ## 실행하면 NoSuchElementException 으로 실패함 (2026-11-14, 사용 안내)
 
 - 증상: 입출력 문제를 실행하면 `java.util.NoSuchElementException` (스택에 `Scanner.nextInt`) 이 나오고 `실행 실패, 종료 코드 1`.

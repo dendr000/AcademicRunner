@@ -91,3 +91,16 @@ test('재귀 문장은 실행하지 않고 건너뛴다(끝나지 않는 쿼리 
   assert.equal(r.ok, true)
   assert.equal(r.tables[0].rowCount, 0)
 })
+
+test('입력 탭의 재귀 문장도 실행하지 않고 건너뛴다(끝나지 않는 쿼리 방지)', () => {
+  const setup = 'CREATE TABLE t(n INTEGER);\nINSERT INTO t WITH RECURSIVE c(n) AS (SELECT 1 UNION ALL SELECT n + 1 FROM c) SELECT n FROM c;\nINSERT INTO t VALUES (5);'
+  const r = inspectTables('SELECT * FROM t', setup)
+  assert.equal(r.ok, true)
+  assert.deepEqual(r.tables[0].rows, [['5']])
+})
+
+test('입력 탭 오류는 몇 번째 문장인지 알려 준다', () => {
+  const r = inspectTables('SELECT 1', 'CREATE TABLE a(x INTEGER);\nINSERT INTO nothing VALUES (1);')
+  assert.equal(r.ok, false)
+  assert.match(r.error, /2번째 문/)
+})

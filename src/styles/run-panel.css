@@ -15,11 +15,9 @@
 
 .run-bar {
   display: flex;
-  flex-wrap: nowrap;
-  overflow-x: auto; /* 아주 좁으면 줄바꿈 대신 가로로 밀어서 본다 */
-  scrollbar-width: thin;
+  flex-wrap: wrap; /* 좁으면 버튼·탭 단위로 다음 줄로 보낸다(글자 안은 줄바꿈하지 않는다) */
   align-items: center;
-  gap: 8px;
+  gap: 4px 8px;
   padding: 6px 12px;
   border-bottom: 1px solid var(--border);
 }

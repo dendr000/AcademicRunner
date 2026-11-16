@@ -17,7 +17,7 @@
     { id: 'replace', label: '바꾸기', group: '편집', key: '', fixed: 'Ctrl+H' },
     { id: 'commentLine', label: '줄 주석 토글', group: '편집', key: '', fixed: 'Ctrl+/' },
     { id: 'about', label: '정보', group: '도움말', key: '' },
-    { id: 'toggleSidebar', label: '문제 목록 접기/펴기', group: '보기', key: 'Ctrl+B' },
+    { id: 'toggleSidebar', label: '문제 목록 접기/펴기', group: '보기', key: 'Ctrl+M' },
     { id: 'toggleTheme', label: '테마 전환 (시스템/라이트/다크)', group: '보기', key: '' },
     { id: 'fontBigger', label: '편집기 글자 크게', group: '보기', key: 'Ctrl+=' },
     { id: 'fontSmaller', label: '편집기 글자 작게', group: '보기', key: 'Ctrl+-' },

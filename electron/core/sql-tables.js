@@ -50,11 +50,14 @@ function inspectTables(source, setup, list) {
         return { ok: false, error: 'SQL 기본 데이터(' + p.id + ') 오류: ' + e.message }
       }
     }
-    if (prep.trim() !== '') {
+    // 입력 탭의 준비 SQL 은 문장별로 실행한다. 재귀 문장은 끝나지 않을 수 있어(앱이 멈춤) 건너뛴다.
+    const prepStatements = splitStatements(prep)
+    for (let n = 0; n < prepStatements.length; n++) {
+      if (/\bRECURSIVE\b/i.test(prepStatements[n])) continue
       try {
-        db.exec(prep)
+        db.exec(prepStatements[n])
       } catch (e) {
-        return { ok: false, error: '준비 SQL(입력 탭) 오류: ' + e.message }
+        return { ok: false, error: '준비 SQL(입력 탭) ' + (n + 1) + '번째 문 오류: ' + e.message }
       }
     }
     // 풀이가 직접 만든 표도 보이게, 풀이 안의 조회가 아닌 문장(CREATE, INSERT 등)은 실행해 본다. 오류는 건너뛴다.
