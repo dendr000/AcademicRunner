@@ -26,6 +26,11 @@ contextBridge.exposeInMainWorld('runnerApi', {
   stopRun: () => ipcRenderer.invoke('run:stop'),
   sendRunInput: (text) => ipcRenderer.invoke('run:input', text),
   endRunInput: () => ipcRenderer.invoke('run:endInput'),
+  listSqlPresets: () => ipcRenderer.invoke('sqlPresets:list'),
+  saveSqlPreset: (id, sql) => ipcRenderer.invoke('sqlPresets:save', id, sql),
+  resetSqlPreset: (id) => ipcRenderer.invoke('sqlPresets:reset', id),
+  addSqlPreset: (id, sql) => ipcRenderer.invoke('sqlPresets:add', id, sql),
+  removeSqlPreset: (id) => ipcRenderer.invoke('sqlPresets:remove', id),
   getToolInfo: () => ipcRenderer.invoke('tools:info'),
   // 실행 중 출력과 종료 결과가 온다. 해제 함수를 돌려준다.
   onRunEvent: (callback) => {

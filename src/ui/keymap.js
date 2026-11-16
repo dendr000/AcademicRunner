@@ -35,6 +35,7 @@
     { id: 'tabCases', label: '하단 케이스 탭', group: '실행', key: 'Ctrl+3' },
     { id: 'openKeymap', label: '단축키 설정 열기', group: '설정', key: 'Ctrl+,' },
     { id: 'openEditorSettings', label: '환경 설정 열기', group: '설정', key: '' },
+    { id: 'openSqlPresets', label: 'SQL 기본 데이터 열기', group: '설정', key: '' },
   ]
   const BY_ID = new Map(ACTIONS.map((a) => [a.id, a]))
   const STORAGE_KEY = 'academicrunner.keymap'

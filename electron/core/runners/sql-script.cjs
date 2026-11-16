@@ -64,7 +64,14 @@ function main() {
   const ownTables = /\bCREATE\s+TABLE\b/i.test(stripComments(setup + '\n' + source))
   const usePresets = !ownTables && presetFiles.length > 0
   if (usePresets) {
-    for (const p of presetFiles) db.exec(fs.readFileSync(p, 'utf8'))
+    for (const p of presetFiles) {
+      try {
+        db.exec(fs.readFileSync(p, 'utf8'))
+      } catch (e) {
+        process.stderr.write('SQL 기본 데이터(' + require('node:path').basename(p) + ') 오류: ' + e.message + '\n')
+        process.exit(1)
+      }
+    }
   }
   if (setup.trim() !== '') {
     try {

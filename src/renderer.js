@@ -215,6 +215,7 @@
   const keymapDialog = window.createKeymapDialog()
   const aboutDialog = window.createAboutDialog(api)
   const editorSettingsDialog = window.createEditorSettingsDialog(editorSettings, api)
+  const sqlPresetsDialog = window.createSqlPresetsDialog(api)
   window.appActions.registerActions({
     chooseRoot: () => document.getElementById('root-button').click(),
     save: () => editorPane.flush(),
@@ -236,6 +237,7 @@
     nextProblem: () => openProblem(window.problemNav.neighbor(visibleLevels(), openedId, 1)),
     openKeymap: () => keymapDialog.open(),
     openEditorSettings: () => editorSettingsDialog.open(),
+    openSqlPresets: () => sqlPresetsDialog.open(),
     about: () => aboutDialog.open(),
     undo: () => editorPane.trigger('undo'),
     redo: () => editorPane.trigger('redo'),

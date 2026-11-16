@@ -7,6 +7,8 @@ const { createCaseStore } = require('./core/case-store')
 const tools = require('./core/tool-locator')
 const { createRunService } = require('./core/run-service')
 const { runners } = require('./core/runners')
+const { builtinList } = require('./core/runners/sql')
+const { createSqlPresetStore } = require('./core/sql-preset-store')
 const { createSettingsStore } = require('./core/settings')
 const { progressAll, progressOne } = require('./core/progress-status')
 const path = require('node:path')
@@ -49,7 +51,14 @@ function registerIpcHandlers(getWindow, appId) {
   )
   ipcMain.handle('files:restoreOriginal', (_e, problemId, fileName) => files.restoreOriginal(settings.get().root, problemId, fileName))
   // 실행: 한 번에 하나만 돈다. 출력은 run:event 로 조금씩 보내고, 끝나면 type 'done' 으로 결과를 보낸다.
-  const runService = createRunService({ runners, tools })
+  // SQL 기본 데이터 묶음(내장 수정본과 사용자 묶음). 실행기는 tools.sqlPresets() 로 최신 내용을 읽는다.
+  const sqlPresets = createSqlPresetStore(app.getPath('userData'), builtinList())
+  ipcMain.handle('sqlPresets:list', () => sqlPresets.list())
+  ipcMain.handle('sqlPresets:save', (_e, id, sql) => sqlPresets.save(id, sql))
+  ipcMain.handle('sqlPresets:reset', (_e, id) => sqlPresets.reset(id))
+  ipcMain.handle('sqlPresets:add', (_e, id, sql) => sqlPresets.add(id, sql))
+  ipcMain.handle('sqlPresets:remove', (_e, id) => sqlPresets.remove(id))
+  const runService = createRunService({ runners, tools: { ...tools, sqlPresets: () => sqlPresets.forRun() } })
   let activeRun = null
   let runCounter = 0
 
