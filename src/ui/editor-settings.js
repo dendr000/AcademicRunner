@@ -1,12 +1,12 @@
 // Copyright (c) dendr000. MIT License.
-// 편집기 설정(글자 크기, 탭 칸 수, 줄 바꿈, 미니맵)의 기본값·검사·저장. 화면(DOM)과 Monaco 를 모르는 순수 로직이라 시험할 수 있다.
+// 편집기 설정(글자 크기, 탭 칸 수, 줄 바꿈, 미니맵, 매개변수 이름 힌트)의 기본값·검사·저장. 화면(DOM)과 Monaco 를 모르는 순수 로직이라 시험할 수 있다.
 // 바꾼 값만이 아니라 전체를 저장하되, 읽을 때 항목마다 검사해 이상한 값은 기본값으로 되돌린다.
 (function (root) {
   const STORAGE_KEY = 'academicrunner.editor'
   const FONT_MIN = 8
   const FONT_MAX = 40
   const TAB_SIZES = [2, 4, 8]
-  const DEFAULTS = { fontSize: 14, tabSize: 4, wordWrap: false, minimap: false }
+  const DEFAULTS = { fontSize: 14, tabSize: 4, wordWrap: false, minimap: false, paramHints: true }
 
   // 임의의 값을 받아 유효한 설정 객체를 만든다. 없거나 틀린 항목은 기본값.
   function sanitize(raw) {
@@ -17,6 +17,7 @@
       tabSize: TAB_SIZES.includes(src.tabSize) ? src.tabSize : DEFAULTS.tabSize,
       wordWrap: typeof src.wordWrap === 'boolean' ? src.wordWrap : DEFAULTS.wordWrap,
       minimap: typeof src.minimap === 'boolean' ? src.minimap : DEFAULTS.minimap,
+      paramHints: typeof src.paramHints === 'boolean' ? src.paramHints : DEFAULTS.paramHints,
     }
   }
 
@@ -28,7 +29,7 @@
 
   // Monaco 옵션 모양으로 바꾼다.
   function toMonacoOptions(settings) {
-    return { fontSize: settings.fontSize, tabSize: settings.tabSize, wordWrap: settings.wordWrap ? 'on' : 'off', minimap: { enabled: settings.minimap } }
+    return { fontSize: settings.fontSize, tabSize: settings.tabSize, wordWrap: settings.wordWrap ? 'on' : 'off', minimap: { enabled: settings.minimap }, inlayHints: { enabled: settings.paramHints ? 'on' : 'off' } }
   }
 
   // storage: getItem/setItem 이 있는 저장소

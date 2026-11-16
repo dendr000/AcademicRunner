@@ -87,7 +87,7 @@
     return params.map((p, i) => '${' + (i + 1) + ':' + p.name + '}').join(', ')
   }
 
-  // 반환: [{ name, kind, start, end, members: [{ name, detail, params, isStatic, type }] }]
+  // 반환: [{ name, kind, start, end, members: [...], ctors: [{ params: [{ type, name }] }] }]
   //   members 의 params: null 은 필드(괄호 없음), 문자열은 메서드(괄호 안 자리표시)
   //   type: 필드 타입 또는 메서드 반환 타입(간단한 이름, 모르면 null)
   function parseJavaClasses(source) {
@@ -108,6 +108,8 @@
       }
       const end = matchBrace(code, open)
       const members = []
+      const ctors = []
+      if (components.length > 0) ctors.push({ params: components })
       for (const c of components) members.push({ name: c.name, detail: c.type, params: '', isStatic: false, type: simpleType(c.type) })
       const list = headers(code.slice(open + 1, end))
       list.forEach((header, index) => {
@@ -122,10 +124,13 @@
         if (mm && !/^(if|for|while|switch|return|new|else|catch|try)$/.test(mm[3])) {
           const isStatic = /\bstatic\b/.test(mm[1])
           const returnType = mm[2]
-          if (!returnType && mm[3] === match[2]) return // 생성자는 점 뒤에 나오지 않는다
           const params = parseParams(mm[4])
+          if (!returnType && mm[3] === match[2]) {
+            ctors.push({ params }) // 생성자는 점 뒤에 나오지 않지만, new 호출의 매개변수 이름 힌트에 쓴다
+            return
+          }
           const sig = '(' + params.map((p) => (p.type ? p.type + ' ' : '') + p.name).join(', ') + ')'
-          members.push({ name: mm[3], detail: sig + (returnType ? ' -> ' + returnType : ''), params: paramSnippet(params), isStatic, type: simpleType(returnType) })
+          members.push({ name: mm[3], detail: sig + (returnType ? ' -> ' + returnType : ''), params: paramSnippet(params), isStatic, type: simpleType(returnType), paramList: params })
           return
         }
         const fm = FIELD_RE.exec(header)
@@ -140,7 +145,7 @@
           }
         }
       })
-      classes.push({ name: match[2], kind, start: open, end, members })
+      classes.push({ name: match[2], kind, start: open, end, members, ctors })
     }
     return classes
   }

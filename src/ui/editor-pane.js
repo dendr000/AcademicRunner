@@ -207,6 +207,7 @@
       }
       window.registerSnippets(monaco)
       window.registerMemberCompletion(monaco)
+      window.javaEditorFeatures.registerParamHints(monaco)
       editor = monaco.editor.create(host, {
         theme: themeName(),
         automaticLayout: true,
@@ -220,6 +221,7 @@
         tabCompletion: 'on', // 단축 입력을 친 뒤 Tab 으로 펼침
         detectIndentation: false, // 파일 내용에서 탭 칸 수를 짐작하지 않고 설정값을 쓴다
       })
+      window.javaEditorFeatures.attachDiagnostics(monaco, editor)
       // Java: List< 처럼 타입 뒤에 < 를 치면 > 를 자동으로 닫고, 이미 있는 > 를 치면 덮어쓴다.
       editor.onDidType((text) => {
         if (!current || current.file.language !== 'java') return

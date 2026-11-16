@@ -14,8 +14,8 @@ test('저장값이 없으면 기본값', () => {
 })
 
 test('항목별로 검사하고 이상한 값은 기본값으로 되돌린다', () => {
-  assert.deepStrictEqual(sanitize({ fontSize: 99, tabSize: 3, wordWrap: 'yes', minimap: 1 }), DEFAULTS)
-  assert.deepStrictEqual(sanitize({ fontSize: 20, tabSize: 2, wordWrap: true, minimap: true }), { fontSize: 20, tabSize: 2, wordWrap: true, minimap: true })
+  assert.deepStrictEqual(sanitize({ fontSize: 99, tabSize: 3, wordWrap: 'yes', minimap: 1, paramHints: 'no' }), DEFAULTS)
+  assert.deepStrictEqual(sanitize({ fontSize: 20, tabSize: 2, wordWrap: true, minimap: true, paramHints: false }), { fontSize: 20, tabSize: 2, wordWrap: true, minimap: true, paramHints: false })
   assert.strictEqual(sanitize({ fontSize: 15.5 }).fontSize, DEFAULTS.fontSize)
   for (const bad of [null, undefined, 5, 'x', [1]]) assert.deepStrictEqual(sanitize(bad), DEFAULTS)
   // 일부만 맞아도 맞는 항목은 살린다
@@ -66,6 +66,7 @@ test('reset 은 기본값으로 되돌리고 구독 해제가 된다', () => {
 })
 
 test('Monaco 옵션으로 바꾼다', () => {
-  assert.deepStrictEqual(toMonacoOptions({ fontSize: 16, tabSize: 2, wordWrap: true, minimap: true }), { fontSize: 16, tabSize: 2, wordWrap: 'on', minimap: { enabled: true } })
+  assert.deepStrictEqual(toMonacoOptions({ fontSize: 16, tabSize: 2, wordWrap: true, minimap: true, paramHints: false }), { fontSize: 16, tabSize: 2, wordWrap: 'on', minimap: { enabled: true }, inlayHints: { enabled: 'off' } })
+  assert.strictEqual(toMonacoOptions(DEFAULTS).inlayHints.enabled, 'on') // 기본은 켜짐
   assert.strictEqual(toMonacoOptions(DEFAULTS).wordWrap, 'off')
 })

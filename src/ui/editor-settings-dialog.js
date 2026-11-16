@@ -74,6 +74,11 @@
       mini.checked = cur.minimap
       mini.addEventListener('change', () => settings.set({ minimap: mini.checked }))
 
+      const hintsBox = el('input', 'settings-check')
+      hintsBox.type = 'checkbox'
+      hintsBox.checked = cur.paramHints
+      hintsBox.addEventListener('change', () => settings.set({ paramHints: hintsBox.checked }))
+
       // 실행 시간 제한(초): 앱 설정 파일에 저장되고 다음 실행부터 적용된다. 값은 메인 프로세스가 1~120 으로 검사한다.
       const limit = el('input', 'settings-input')
       limit.type = 'number'
@@ -92,7 +97,7 @@
       })
 
       const list = el('div', 'settings-list')
-      list.append(row('글자 크기 (' + lib.FONT_MIN + '~' + lib.FONT_MAX + ')', font), row('탭 칸 수', tab), row('긴 줄 바꿈', wrapBox), row('미니맵', mini), row('실행 시간 제한 (1~120초)', limit))
+      list.append(row('글자 크기 (' + lib.FONT_MIN + '~' + lib.FONT_MAX + ')', font), row('탭 칸 수', tab), row('긴 줄 바꿈', wrapBox), row('미니맵', mini), row('매개변수 이름 힌트', hintsBox), row('실행 시간 제한 (1~120초)', limit))
       box.appendChild(list)
       box.appendChild(window.createMobileSection(api).element)
 
@@ -102,6 +107,7 @@
         tab.value = String(v.tabSize)
         wrapBox.checked = v.wordWrap
         mini.checked = v.minimap
+        hintsBox.checked = v.paramHints
       })
 
       const bar = el('div', 'dialog-bar')

@@ -61,6 +61,9 @@ AcademicRunner/
     ui/snippets.js        스니펫을 편집기에 등록
     ui/java-classes.js    같은 파일의 내 클래스 필드·메서드 읽기(순수 함수)
     ui/new-completion.js  new 뒤 클래스 제안과 꺾쇠 자동 닫기 판단(순수 함수)
+    ui/param-hints.js     매개변수 이름 힌트 계산(순수 함수)
+    ui/java-diagnostics.js 타입 오타·빠진 import 점검(순수 함수)
+    ui/java-editor-features.js 위 둘을 Monaco 에 연결
     ui/member-data.js     점 자동 완성 목록과 변수 종류 짐작(순수 함수)
     ui/member-completion.js 점 자동 완성을 편집기에 등록
     ui/problem-nav.js     이전/다음 문제 계산(순수 함수)
@@ -102,6 +105,8 @@ AcademicRunner/
     snippet-data.test.js    스니펫 목록 형식
     member-data.test.js     변수 종류 짐작·점 자동 완성 목록
     new-completion.test.js  new 뒤 제안·꺾쇠 자동 닫기
+    param-hints.test.js     매개변수 이름 힌트
+    java-diagnostics.test.js 타입 오타·빠진 import 점검
     interactive-input.test.js  실시간 입력(콘솔처럼)
     settings-timeout.test.js  시간 제한 설정
 ```
