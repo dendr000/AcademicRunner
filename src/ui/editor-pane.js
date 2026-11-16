@@ -214,7 +214,7 @@
         fontFamily: "D2Coding, Consolas, 'Malgun Gothic', monospace",
         ...(options.settings ? window.editorSettingsLib.toMonacoOptions(options.settings.get()) : { fontSize: 14, tabSize: 4, minimap: { enabled: false } }),
         scrollBeyondLastLine: false,
-        mouseWheelZoom: true, // Ctrl + 휠로 글자 크기
+        mouseWheelZoom: false, // 기본 확대는 한 칸에 크게 뛰고 저장도 안 되어 직접 처리한다(아래 Ctrl + 휠)
         renderWhitespace: 'none',
         snippetSuggestions: 'inline', // 단축 입력은 다른 제안과 섞어 정렬한다(변수가 먼저, 아래 sortText 참고)
         wordBasedSuggestions: 'off', // 같은 파일 이름 제안은 member-completion.js 가 직접 한다
@@ -242,6 +242,23 @@
           }
         }
       })
+      // Ctrl + 휠: 휠 한 칸에 글자 크기 1씩. 설정에 저장되어 껐다 켜도 유지된다.
+      let wheelAcc = 0
+      host.addEventListener(
+        'wheel',
+        (ev) => {
+          if (!ev.ctrlKey) return
+          ev.preventDefault()
+          wheelAcc += ev.deltaY
+          if (Math.abs(wheelAcc) < 50) return // 정밀 휠이 잘게 나눠 보내는 값은 모아서 쓴다
+          const step = wheelAcc < 0 ? 1 : -1
+          wheelAcc = 0
+          const size = Math.min(40, Math.max(8, editor.getOption(monaco.editor.EditorOption.fontSize) + step))
+          editor.updateOptions({ fontSize: size })
+          if (options.settings) options.settings.set({ fontSize: size })
+        },
+        { passive: false, capture: true }, // 편집기 안쪽이 이벤트를 막기 전에 받는다
+      )
       if (options.settings) {
         // 설정 창에서 바꾼 값을 바로 적용하고, Ctrl + 휠로 바뀐 글자 크기도 저장한다.
         options.settings.onChange((v) => editor.updateOptions(window.editorSettingsLib.toMonacoOptions(v)))
