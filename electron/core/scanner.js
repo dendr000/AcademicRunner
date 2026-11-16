@@ -23,7 +23,7 @@ const LANGUAGES = {
 // 입출력 문제는 Main, 함수 작성 문제는 Solution 으로 시작하는 파일이다(사이트 시작 코드 규칙).
 function kindOf(fileName) {
   const base = path.parse(fileName).name.toLowerCase()
-  if (base === 'main') return 'io'
+  if (base === 'main' || path.extname(fileName).toLowerCase() === '.sql') return 'io'
   if (base === 'solution') return 'function'
   return 'unknown'
 }

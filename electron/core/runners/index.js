@@ -3,7 +3,9 @@
 const java = require('./java')
 const python = require('./python')
 const javascript = require('./javascript')
+const sql = require('./sql')
+const { createRunner } = require('./c-family')
 
-const runners = { java, python, javascript }
+const runners = { java, python, javascript, sql, c: createRunner('c'), cpp: createRunner('cpp') }
 
 module.exports = { runners, getRunner: (language) => runners[language] || null }

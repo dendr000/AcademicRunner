@@ -51,16 +51,26 @@
         return true
       },
       // info: { fileName, edited, hash } (진행 정보). 정보가 없으면 'untouched'.
+      // 언어 파일이 여러 개면(files) 어느 하나라도 지금 코드로 통과했으면 통과, 하나라도 고쳤으면 작성 중.
       statusOf(problemId, info) {
         if (!info) return 'untouched'
-        if (!info.edited) return 'untouched'
-        const rec = records[keyOf(problemId, info.fileName)]
-        return rec && rec.hash === info.hash ? 'passed' : 'working'
+        const list = Array.isArray(info.files) && info.files.length > 0 ? info.files : [info]
+        const edited = list.filter((f) => f.edited)
+        if (edited.length === 0) return 'untouched'
+        const passed = edited.some((f) => {
+          const rec = records[keyOf(problemId, f.fileName)]
+          return rec && rec.hash === f.hash
+        })
+        return passed ? 'passed' : 'working'
       },
       // 오늘 통과한(지금도 통과 상태인) 문제인가
       passedToday(problemId, info) {
         if (!info || this.statusOf(problemId, info) !== 'passed') return false
-        return records[keyOf(problemId, info.fileName)].date === dateKey(clock())
+        const list = Array.isArray(info.files) && info.files.length > 0 ? info.files : [info]
+        return list.some((f) => {
+          const rec = records[keyOf(problemId, f.fileName)]
+          return f.edited && rec && rec.hash === f.hash && rec.date === dateKey(clock())
+        })
       },
       forget(problemId, fileName) {
         delete records[keyOf(problemId, fileName)]

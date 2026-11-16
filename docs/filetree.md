@@ -39,7 +39,7 @@ AcademicRunner/
       output-compare.js  기대/실제 출력 비교
       json-compare.js  함수 문제 반환값(JSON) 비교
       harness/java-harness.js  Java 함수 문제 호출 코드 생성
-      runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js)
+      runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js, c-family.js, sql.js, sql-script.cjs)
   scripts/
     make-icon.cjs      icon.svg 에서 icon.ico 생성
     package-win.js     exe 패키징(허용 목록 방식)
@@ -58,6 +58,7 @@ AcademicRunner/
     ui/run-panel.js       실행 패널(입력·출력 탭, 실행·중지·컴파일, 단축키)
     ui/run-summary.js     실행 결과 한 줄 요약(순수 함수)
     ui/snippet-data.js    단축 입력(스니펫) 목록(순수 데이터)
+    ui/snippet-data-more.js  C/C++/SQL 단축 입력 목록
     ui/snippets.js        스니펫을 편집기에 등록
     ui/java-classes.js    같은 파일의 내 클래스 필드·메서드 읽기(순수 함수)
     ui/new-completion.js  new 뒤 클래스 제안과 꺾쇠 자동 닫기 판단(순수 함수)
@@ -107,6 +108,7 @@ AcademicRunner/
     progress.test.js        진행 상태·통과 기록·집계
     progress-status.test.js 코드 정규화·해시, 시작 코드와 비교
     snippet-data.test.js    스니펫 목록 형식
+    run-service-sql-c.test.js  SQL 실행·C/C++ 러너 준비 단계
     member-data.test.js     변수 종류 짐작·점 자동 완성 목록
     new-completion.test.js  new 뒤 제안·꺾쇠 자동 닫기
     param-hints.test.js     매개변수 이름 힌트

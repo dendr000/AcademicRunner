@@ -1,5 +1,5 @@
 // Copyright (c) dendr000. MIT License.
-// 이 PC 에 설치된 실행 도구(javac, java, python)를 찾는다. 찾은 결과는 계속 쓰되, 못 찾았거나 찾아 둔 파일이 사라졌으면 다음 실행 때 다시 찾는다.
+// 이 PC 에 설치된 실행 도구(javac, java, python, gcc/g++)를 찾는다. 찾은 결과는 계속 쓰되, 못 찾았거나 찾아 둔 파일이 사라졌으면 다음 실행 때 다시 찾는다.
 const fs = require('node:fs')
 const path = require('node:path')
 const { spawnSync } = require('node:child_process')
@@ -64,11 +64,38 @@ function locatePython(env) {
   return null
 }
 
+// C/C++ 컴파일러가 흔히 설치되는 폴더(PATH 에 없어도 찾는다). MSYS2, MinGW, TDM-GCC, LLVM, WinLibs(winget).
+function compilerDirs(env) {
+  const e = env || process.env
+  const dirs = ['C:/msys64/ucrt64/bin', 'C:/msys64/mingw64/bin', 'C:/msys64/clang64/bin', 'C:/mingw64/bin', 'C:/MinGW/bin', 'C:/TDM-GCC-64/bin', 'C:/winlibs/mingw64/bin', 'C:/Program Files/LLVM/bin']
+  const local = e.LOCALAPPDATA
+  if (local) {
+    const pkgs = path.join(local, 'Microsoft', 'WinGet', 'Packages')
+    try {
+      for (const entry of fs.readdirSync(pkgs)) if (/winlibs|mingw|llvm/i.test(entry)) dirs.push(path.join(pkgs, entry, 'mingw64', 'bin'), path.join(pkgs, entry, 'bin'))
+    } catch {
+      // winget 폴더가 없으면 건너뛴다.
+    }
+  }
+  return dirs
+}
+
+// { cmd, version } 또는 null. names: 찾을 실행 파일 이름 후보(앞에서부터)
+function locateCompiler(names, env) {
+  for (const name of names) {
+    const cmd = findOnPath(name, compilerDirs(env), env)
+    if (!cmd) continue
+    const version = readVersion(cmd, ['--version'], /(?:gcc|g\+\+|clang)[^\n]*/i)
+    if (version) return { cmd, version }
+  }
+  return null
+}
+
 const cache = {}
 // 찾은 도구의 실행 파일이 아직 있으면 그대로 쓴다. 없으면(못 찾았거나 삭제·이동) 다시 찾는다.
 function stillThere(found) {
   if (!found) return false
-  return [found.javac, found.java, found.python].filter(Boolean).every(isFile)
+  return [found.javac, found.java, found.python, found.cmd].filter(Boolean).every(isFile)
 }
 
 function cached(key, finder) {
@@ -79,10 +106,13 @@ function cached(key, finder) {
 module.exports = {
   locateJava,
   locatePython,
+  locateCompiler,
   findOnPath,
   readVersion,
   java: () => cached('java', () => locateJava()),
   python: () => cached('python', () => locatePython()),
+  c: () => cached('c', () => locateCompiler(['gcc', 'clang'])),
+  cpp: () => cached('cpp', () => locateCompiler(['g++', 'clang++'])),
   // 앱 자체가 Node 를 품고 있다(Electron). ELECTRON_RUN_AS_NODE=1 로 실행하면 일반 Node 처럼 동작한다.
   node: () => ({ node: process.execPath, version: 'Node ' + process.versions.node }),
   cached,

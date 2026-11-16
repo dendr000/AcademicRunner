@@ -117,8 +117,8 @@ test('문제 75개 규모도 한 번에 찾는다 (수락 기준)', () => {
     })
     const started = Date.now()
     const result = scanProblems(root)
-    assert.strictEqual(result.problemCount, 75)
-    assert.strictEqual(result.levels.length, 8)
+    assert.ok(result.problemCount >= 75) // 자바 75문제 + 이후 추가된 문제
+    assert.ok(result.levels.length >= 8)
     assert.ok(Date.now() - started < 1000, '1초 안에 끝나야 한다')
   } finally {
     fs.rmSync(root, { recursive: true, force: true })
@@ -151,9 +151,9 @@ test('깨진 설정 파일은 기본값으로 대체한다', () => {
 })
 
 // 실제 문제 폴더가 있으면 읽기만 해서 구조를 확인한다. 없으면 건너뛴다.
-test('실제 문제 폴더(읽기 전용): 75문제, 8단계', { skip: !fs.existsSync('C:\\dev\\AcademicTest') }, () => {
+test('실제 문제 폴더(읽기 전용): 문제 수 확인(8단계 이상)', { skip: !fs.existsSync('C:\\dev\\AcademicTest') }, () => {
   const result = scanProblems('C:\\dev\\AcademicTest')
   assert.strictEqual(result.ok, true)
-  assert.strictEqual(result.levels.length, 8)
-  assert.strictEqual(result.problemCount, 75)
+  assert.ok(result.levels.length >= 8)
+  assert.ok(result.problemCount >= 75) // 자바 75문제 + 이후 추가된 문제
 })

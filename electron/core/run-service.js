@@ -52,7 +52,7 @@ function createRunService(deps) {
       const mode = request.mode === 'compile' ? 'compile' : 'run'
       const kind = kindOf(request.fileName)
       // 실시간 입력은 입출력 문제를 한 번 실행할 때만 쓴다(케이스 실행은 입력이 정해져 있다).
-      const interactive = request.interactive === true && mode === 'run' && kind === 'io' && !withCases
+      let interactive = request.interactive === true && mode === 'run' && kind === 'io' && !withCases
       if (mode === 'run' && kind !== 'io' && !withCases) {
         return prepareFailure('NOT_IO_PROBLEM', '함수 작성 문제는 입력을 읽지 않아 단독 실행할 수 없습니다. 케이스 탭에서 케이스(인수와 기대 반환값)를 만든 뒤 "전부 실행(F7)"을 누르세요. 컴파일 확인(F6)은 가능합니다.')
       }
@@ -68,6 +68,7 @@ function createRunService(deps) {
       try {
         const prepared = runner.prepare({ source: read.content, fileName: request.fileName, mode, dir, kind, cases: withCases ? request.cases : undefined }, deps.tools)
         if (prepared.error) return prepareFailure(prepared.error, prepared.message)
+        if (prepared.noInteractive) interactive = false
         // 오류 메시지에 임시 폴더 경로가 길게 나오지 않게 파일 이름만 남긴다.
         const clean = (text) => text.split(dir + path.sep).join('')
         for (const w of prepared.writes) fs.writeFileSync(path.join(dir, w.name), w.content, 'utf8')

@@ -2,6 +2,7 @@
 // 가운데 편집 영역: 파일 탭, 저장 상태, 코드 전체 복사, 시작 코드로 되돌리기, 자동 저장, 외부 변경 감지.
 // 글자는 textContent 로만 넣는다.
 (function () {
+  const LANGUAGE_KEY = 'academicrunner.language'
   const MONACO_LANGUAGE = { java: 'java', python: 'python', javascript: 'javascript', c: 'c', cpp: 'cpp', sql: 'sql' }
   const STATE_TEXT = { clean: '저장됨', dirty: '저장 대기 중...', saving: '저장 중...', error: '저장 실패' }
   const POLL_MS = 1500
@@ -300,7 +301,20 @@
     }
 
     // 현재 파일의 변경을 저장하고 다른 파일을 연다. 저장에 실패하면 이동을 취소할지 묻고 false 를 돌려준다.
+    function preferredLanguage() {
+      try {
+        return localStorage.getItem(LANGUAGE_KEY) || 'java'
+      } catch {
+        return 'java'
+      }
+    }
+
     async function openFile(problem, level, file) {
+      try {
+        localStorage.setItem(LANGUAGE_KEY, file.language)
+      } catch {
+        // 저장하지 못해도 열기는 계속한다.
+      }
       const serial = ++openSerial
       if (current && model) {
         await saver.flush()
@@ -346,7 +360,9 @@
           container.replaceChildren(el('p', 'list-empty', '이 문제 폴더에는 풀이 파일이 없습니다.'))
           return true
         }
-        return openFile(problem, level, problem.files[0])
+        // 언어별 파일이 여럿이면 마지막에 고른 언어를 먼저 연다(없으면 Java, 그것도 없으면 첫 파일).
+        const want = preferredLanguage()
+        return openFile(problem, level, problem.files.find((x) => x.language === want) || problem.files.find((x) => x.language === 'java') || problem.files[0])
       },
       flush: () => saver.flush(),
       // 편집기의 현재 코드 전체(저장 여부와 상관없이 화면에 보이는 그대로)

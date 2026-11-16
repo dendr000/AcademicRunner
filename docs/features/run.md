@@ -83,3 +83,9 @@
 ## 시험
 
 `test/process-runner.test.js`, `test/run-service-java.test.js`(실제 javac 사용, JDK 가 없으면 건너뜀), `test/run-service-script.test.js`(Python·JS 실제 실행, Python 이 없으면 Python 시험만 건너뜀), `test/run-summary.test.js`, `test/settings-timeout.test.js`. 화면은 개발 실행에서 실제 키 입력(F5, F6, Shift+F5)으로 확인했습니다(실행·입력 기억·컴파일 오류·시간 초과·중지·함수 문제 거부·라이트/다크).
+
+## C / C++ / SQL 실행 (v1.19.0)
+
+- **C / C++**: PC 에 `gcc`·`g++`(또는 `clang`)가 있어야 한다. PATH 와 흔한 설치 폴더(MSYS2, MinGW, WinLibs, LLVM)에서 찾는다. 없으면 설치 안내(winget WinLibs)를 보여 준다. 임시 폴더에서 컴파일하므로 문제 폴더에는 실행 파일이 생기지 않는다. 컴파일 확인(F6)은 `-fsyntax-only`. `Solution.c`/`Solution.cpp` 같은 함수 문제는 main 이 없어 케이스 시험을 아직 지원하지 않고 컴파일 확인만 된다.
+- **SQL**: 앱에 든 SQLite(메모리 DB)로 실행한다. 설치할 것이 없다. **입력 탭에 `CREATE TABLE`·`INSERT` 로 시험용 표를 적으면** 그것을 먼저 실행한 뒤 풀이 .sql 의 문장을 차례로 실행한다. SELECT 결과는 첫 줄이 열 이름인 탭 구분 표로 나온다. 컴파일 확인은 문법만 보며 표가 없다는 오류는 넘긴다. 실시간 입력 모드는 쓰지 않는다.
+- 용어: **SQLite** 는 파일 하나짜리 가벼운 데이터베이스, **메모리 DB** 는 디스크에 저장하지 않고 실행 동안만 있는 DB 다.

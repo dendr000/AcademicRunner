@@ -104,7 +104,8 @@
     { label: 'swap', detail: '두 값 바꾸기', body: '[${1:a}, ${2:b}] = [${2:b}, ${1:a}];$0' },
   ]
 
-  const SNIPPETS = { java, python, javascript }
+  const more = typeof module !== 'undefined' && module.exports ? require('./snippet-data-more') : root.snippetDataMore
+  const SNIPPETS = { java, python, javascript, ...more }
   const api = { SNIPPETS }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   else root.snippetData = api

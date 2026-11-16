@@ -3,9 +3,9 @@ const test = require('node:test')
 const assert = require('node:assert')
 const { SNIPPETS } = require('../src/ui/snippet-data')
 
-const LANGS = ['java', 'python', 'javascript']
+const LANGS = ['java', 'python', 'javascript', 'c', 'cpp', 'sql']
 
-test('Java·Python·JavaScript 스니펫이 모두 있다', () => {
+test('Java·Python·JavaScript·C·C++·SQL 스니펫이 모두 있다', () => {
   assert.deepStrictEqual(Object.keys(SNIPPETS).sort(), [...LANGS].sort())
   for (const lang of LANGS) assert.ok(SNIPPETS[lang].length >= 20, lang)
 })
@@ -15,6 +15,9 @@ test('필수 단축 입력이 들어 있다', () => {
   for (const need of ['sout', 'soutv', 'psvm', 'fori', 'for', 'foreach', 'if', 'while', 'sc', 'try']) assert.ok(labels('java').includes(need), 'java ' + need)
   for (const need of ['print', 'for', 'fori', 'if', 'def', 'inpl']) assert.ok(labels('python').includes(need), 'python ' + need)
   for (const need of ['log', 'for', 'forof', 'if', 'fn', 'arrow']) assert.ok(labels('javascript').includes(need), 'js ' + need)
+  for (const need of ['main', 'printf', 'scanf', 'fori', 'if']) assert.ok(labels('c').includes(need), 'c ' + need)
+  for (const need of ['main', 'cout', 'cin', 'vec', 'sort', 'fori']) assert.ok(labels('cpp').includes(need), 'cpp ' + need)
+  for (const need of ['sel', 'selw', 'grp', 'join', 'ins', 'upd', 'del']) assert.ok(labels('sql').includes(need), 'sql ' + need)
 })
 
 test('같은 언어 안에서 label 이 겹치지 않고 모두 글자·숫자뿐이다', () => {

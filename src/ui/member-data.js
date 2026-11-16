@@ -233,7 +233,49 @@
       const k = inferScriptKind('javascript', source, receiver)
       return JS_BY_KIND[k] || GENERIC.javascript
     }
+    if (language === 'cpp') {
+      if (CPP_STATIC[receiver]) return CPP_STATIC[receiver]
+      const t = inferCppType(source, receiver)
+      return t ? CPP_BY_TYPE[t] : []
+    }
     return []
+  }
+
+  // C++ 표준 라이브러리 컨테이너 멤버. 선언(vector<int> v, string s ...)을 읽어 짐작한다.
+  const CPP_STRING = [
+    m('size', '글자 수'), m('length', '글자 수'), m('empty', '비었는가'), m('substr', '일부 잘라내기', '${1:pos}, ${2:len}'), m('find', '위치 찾기 (없으면 string::npos)', '${1:str}'),
+    m('push_back', '글자 붙이기', '${1:c}'), m('pop_back', '마지막 글자 지우기'), m('append', '이어 붙이기', '${1:str}'), m('insert', '끼워 넣기', '${1:pos}, ${2:str}'), m('erase', '지우기', '${1:pos}, ${2:len}'),
+    m('replace', '바꾸기', '${1:pos}, ${2:len}, ${3:str}'), m('compare', '비교', '${1:other}'), m('c_str', 'C 문자열로'), m('front', '첫 글자'), m('back', '마지막 글자'), m('clear', '비우기'),
+    m('begin', '시작 반복자'), m('end', '끝 반복자'), m('rbegin', '뒤쪽 시작 반복자'), m('rend', '뒤쪽 끝 반복자'), m('at', '위치의 글자', '${1:i}'),
+  ]
+  const CPP_VECTOR = [
+    m('size', '원소 수'), m('empty', '비었는가'), m('push_back', '끝에 넣기', '${1:x}'), m('emplace_back', '끝에 바로 만들어 넣기', '${1}'), m('pop_back', '마지막 지우기'),
+    m('front', '첫 원소'), m('back', '마지막 원소'), m('at', '위치의 원소', '${1:i}'), m('clear', '비우기'), m('resize', '크기 바꾸기', '${1:n}'), m('reserve', '자리 미리 확보', '${1:n}'),
+    m('insert', '끼워 넣기', '${1:it}, ${2:x}'), m('erase', '지우기', '${1:it}'), m('begin', '시작 반복자'), m('end', '끝 반복자'), m('rbegin', '뒤쪽 시작 반복자'), m('rend', '뒤쪽 끝 반복자'), m('assign', '채우기', '${1:n}, ${2:x}'), m('swap', '바꾸기', '${1:other}'), m('data', '원본 포인터'),
+  ]
+  const CPP_MAP = [
+    m('size', '항목 수'), m('empty', '비었는가'), m('count', '키 개수(0 또는 1)', '${1:key}'), m('find', '키 찾기(없으면 end)', '${1:key}'), m('insert', '넣기', '${1:pair}'), m('emplace', '바로 만들어 넣기', '${1:key}, ${2:value}'),
+    m('erase', '지우기', '${1:key}'), m('clear', '비우기'), m('at', '키의 값', '${1:key}'), m('begin', '시작 반복자'), m('end', '끝 반복자'), m('lower_bound', '키 이상의 첫 위치', '${1:key}'), m('upper_bound', '키 초과의 첫 위치', '${1:key}'),
+  ]
+  const CPP_SET = [
+    m('size', '원소 수'), m('empty', '비었는가'), m('insert', '넣기', '${1:x}'), m('count', '개수', '${1:x}'), m('find', '찾기(없으면 end)', '${1:x}'), m('erase', '지우기', '${1:x}'), m('clear', '비우기'),
+    m('begin', '시작 반복자'), m('end', '끝 반복자'), m('lower_bound', '이상의 첫 위치', '${1:x}'), m('upper_bound', '초과의 첫 위치', '${1:x}'),
+  ]
+  const CPP_QUEUE = [m('size', '원소 수'), m('empty', '비었는가'), m('push', '넣기', '${1:x}'), m('pop', '꺼내 버리기'), m('front', '맨 앞'), m('back', '맨 뒤'), m('emplace', '바로 만들어 넣기', '${1}')]
+  const CPP_STACK = [m('size', '원소 수'), m('empty', '비었는가'), m('push', '넣기', '${1:x}'), m('pop', '꺼내 버리기'), m('top', '맨 위'), m('emplace', '바로 만들어 넣기', '${1}')]
+  const CPP_PQ = [m('size', '원소 수'), m('empty', '비었는가'), m('push', '넣기', '${1:x}'), m('pop', '꺼내 버리기'), m('top', '가장 큰(우선) 원소'), m('emplace', '바로 만들어 넣기', '${1}')]
+  const CPP_DEQUE = [...CPP_VECTOR, m('push_front', '앞에 넣기', '${1:x}'), m('pop_front', '앞 지우기'), m('emplace_front', '앞에 바로 만들어 넣기', '${1}')]
+  const CPP_BY_TYPE = { string: CPP_STRING, wstring: CPP_STRING, vector: CPP_VECTOR, array: CPP_VECTOR, list: CPP_DEQUE, deque: CPP_DEQUE, map: CPP_MAP, unordered_map: CPP_MAP, multimap: CPP_MAP, set: CPP_SET, unordered_set: CPP_SET, multiset: CPP_SET, queue: CPP_QUEUE, stack: CPP_STACK, priority_queue: CPP_PQ }
+  const CPP_STATIC = {
+    cout: [m('flush', '출력 비우기'), m('precision', '소수 자릿수', '${1:n}'), m('width', '폭', '${1:n}'), m('put', '글자 하나', '${1:c}'), m('write', '바이트 쓰기', '${1:buf}, ${2:n}')],
+    cin: [m('get', '글자 하나 읽기'), m('ignore', '건너뛰기', ''), m('peek', '다음 글자 보기'), m('eof', '끝인가'), m('fail', '실패했는가'), m('clear', '상태 지우기'), m('tie', '묶기', '${1:nullptr}'), m('sync_with_stdio', '동기화 설정', '${1:false}')],
+    std: ['cout', 'cin', 'cerr', 'endl', 'string', 'vector', 'map', 'set', 'unordered_map', 'unordered_set', 'queue', 'stack', 'priority_queue', 'deque', 'pair', 'sort', 'reverse', 'max', 'min', 'swap', 'abs', 'to_string', 'stoi', 'getline', 'accumulate', 'find', 'count', 'unique', 'lower_bound', 'upper_bound', 'make_pair', 'greater', 'less', 'iota', 'fill', 'move', 'gcd', 'lcm'].map((n) => m(n, 'std::' + n, null)),
+  }
+  function inferCppType(source, name) {
+    const esc = name.replace(/[$]/g, '\\$&')
+    const re = new RegExp('\\b(vector|string|wstring|array|list|deque|map|unordered_map|multimap|set|unordered_set|multiset|queue|stack|priority_queue)\\b[^;(){}]*?[\\s>&*]' + esc + '\\s*(?:[=;,({\\[)]|$)', 'm')
+    const mm = re.exec(source)
+    return mm ? mm[1] : null
   }
 
   function hasDeclaration(source, name) {
