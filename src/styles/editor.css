@@ -13,6 +13,7 @@
 
 .editor-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 10px;
   min-height: 42px;
@@ -26,8 +27,12 @@
   white-space: nowrap;
 }
 
+/* 머리줄 버튼은 글자가 줄바꿈되지 않게 하고, 자리가 모자라면 버튼째로 다음 줄로 넘긴다. */
+.editor-header button { flex: none; white-space: nowrap; }
+
 .editor-tabs {
   display: flex;
+  flex-wrap: wrap;
   gap: 4px;
 }
 

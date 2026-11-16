@@ -62,3 +62,13 @@ test('추가 조건(진행 상태)으로도 거른다', () => {
   assert.deepStrictEqual(out[0].problems.map((p) => p.id), ['y'])
   assert.deepStrictEqual(filterLevels(levels, '', 'all', () => false), [])
 })
+
+test('hasLanguage: 문제에 그 언어 파일이 하나라도 있으면 통과, all 이면 모두 통과', () => {
+  const { hasLanguage } = require('../src/ui/problem-filter')
+  const p = { files: [{ language: 'java' }, { language: 'sql' }] }
+  assert.strictEqual(hasLanguage(p, 'sql'), true)
+  assert.strictEqual(hasLanguage(p, 'python'), false)
+  assert.strictEqual(hasLanguage(p, 'all'), true)
+  assert.strictEqual(hasLanguage(p, ''), true)
+  assert.strictEqual(hasLanguage({}, 'java'), false)
+})

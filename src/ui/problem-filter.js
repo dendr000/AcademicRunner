@@ -24,7 +24,13 @@
     return result
   }
 
-  const api = { filterLevels, normalize }
+  // 문제에 그 언어 파일이 하나라도 있으면 true. language 가 'all' 이거나 비면 모두 통과.
+  function hasLanguage(problem, language) {
+    if (!language || language === 'all') return true
+    return (problem.files || []).some((f) => f.language === language)
+  }
+
+  const api = { filterLevels, normalize, hasLanguage }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   else root.problemFilter = api
 })(typeof window !== 'undefined' ? window : globalThis)

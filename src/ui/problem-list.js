@@ -13,18 +13,45 @@
   }
 
   // statusOf(problem): 'untouched' | 'working' | 'passed' (없으면 상태 표시 없음)
-  function createProblemList(container, onSelect, statusOf) {
+  // options: { collapsed: 접어 둔 단계 번호 배열(처음 상태), onCollapseChange(배열) }
+  function createProblemList(container, onSelect, statusOf, options) {
     let selectedId = null
+    const opts = options || {}
+    const collapsed = new Set((opts.collapsed || []).map(String))
+    let lastRender = null
 
-    function render(levels, emptyMessage) {
+    // forceOpen: 검색·필터 중에는 접힌 단계도 펼쳐서 결과가 숨지 않게 한다.
+    function render(levels, emptyMessage, forceOpen) {
+      lastRender = { levels, emptyMessage, forceOpen }
       container.replaceChildren()
       if (levels.length === 0) {
         container.appendChild(el('p', 'list-empty', emptyMessage || '맞는 문제가 없습니다.'))
         return
       }
       for (const level of levels) {
+        const key = String(level.level)
+        const isClosed = !forceOpen && collapsed.has(key)
         const group = el('section', 'level-group')
-        group.appendChild(el('h2', 'level-title', `Lv${level.level} ${level.label}`))
+        const title = el('h2', 'level-title')
+        const toggle = el('button', 'level-toggle')
+        toggle.type = 'button'
+        toggle.setAttribute('aria-expanded', isClosed ? 'false' : 'true')
+        toggle.appendChild(el('span', 'level-chevron'))
+        toggle.appendChild(el('span', 'level-name', `Lv${level.level} ${level.label}`))
+        toggle.appendChild(el('span', 'level-count', String(level.problems.length)))
+        toggle.addEventListener('click', () => {
+          if (forceOpen) return
+          if (collapsed.has(key)) collapsed.delete(key)
+          else collapsed.add(key)
+          if (opts.onCollapseChange) opts.onCollapseChange([...collapsed])
+          render(lastRender.levels, lastRender.emptyMessage, lastRender.forceOpen)
+        })
+        title.appendChild(toggle)
+        group.appendChild(title)
+        if (isClosed) {
+          container.appendChild(group)
+          continue
+        }
         for (const problem of level.problems) {
           const row = el('button', 'problem-row')
           row.type = 'button'
@@ -61,6 +88,12 @@
     return {
       render,
       select(id) { selectedId = id },
+      setAllCollapsed(levelNumbers, closed) {
+        collapsed.clear()
+        if (closed) for (const n of levelNumbers) collapsed.add(String(n))
+        if (opts.onCollapseChange) opts.onCollapseChange([...collapsed])
+        if (lastRender) render(lastRender.levels, lastRender.emptyMessage, lastRender.forceOpen)
+      },
     }
   }
 

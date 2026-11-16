@@ -4,11 +4,14 @@
   const api = window.runnerApi
   const searchInput = document.getElementById('search-input')
   const levelFilter = document.getElementById('level-filter')
+  const languageFilter = document.getElementById('language-filter')
   const workspace = document.getElementById('workspace')
   const statusRoot = document.getElementById('status-root')
   const layout = document.querySelector('.layout')
   const LAST_PROBLEM_KEY = 'academicrunner.lastProblem'
   const SIDEBAR_KEY = 'academicrunner.sidebarCollapsed'
+  const COLLAPSED_LEVELS_KEY = 'academicrunner.collapsedLevels'
+  const LANGUAGE_FILTER_KEY = 'academicrunner.languageFilter'
 
   function readSaved(key) {
     try {
@@ -64,7 +67,20 @@
   const progress = window.progressLib.createProgress(window.localStorage)
   let progressMap = {}
   const statusOf = (problem) => progress.statusOf(problem.id, progressMap[problem.id])
-  const list = window.createProblemList(document.getElementById('problem-list'), showWorkspace, statusOf)
+  function readCollapsedLevels() {
+    try {
+      const v = JSON.parse(readSaved(COLLAPSED_LEVELS_KEY) || '[]')
+      return Array.isArray(v) ? v : []
+    } catch {
+      return []
+    }
+  }
+  const list = window.createProblemList(document.getElementById('problem-list'), showWorkspace, statusOf, {
+    collapsed: readCollapsedLevels(),
+    onCollapseChange: (arr) => writeSaved(COLLAPSED_LEVELS_KEY, JSON.stringify(arr)),
+  })
+  const savedLanguage = readSaved(LANGUAGE_FILTER_KEY)
+  if (savedLanguage && [...languageFilter.options].some((o) => o.value === savedLanguage)) languageFilter.value = savedLanguage
 
   async function loadProgress() {
     try {
@@ -95,13 +111,16 @@
   // 지금 화면에 보이는(검색·단계 필터를 거친) 단계 목록
   function visibleLevels() {
     if (!scan || !scan.ok) return []
-    const matches = window.progressLib.matcherFor(statusFilter.value, statusOf, (p) => progress.passedToday(p.id, progressMap[p.id]))
+    const byStatus = window.progressLib.matcherFor(statusFilter.value, statusOf, (p) => progress.passedToday(p.id, progressMap[p.id]))
+    const matches = (p) => window.problemFilter.hasLanguage(p, languageFilter.value) && (!byStatus || byStatus(p))
     return window.problemFilter.filterLevels(scan.levels, searchInput.value, levelFilter.value, matches)
   }
 
   function refreshList() {
     if (!scan || !scan.ok) return // 스캔 실패 상태에서는 목록을 그리지 않는다
-    list.render(visibleLevels(), '맞는 문제가 없습니다.')
+    // 검색어나 필터가 켜져 있으면 접힌 단계도 펼쳐 결과가 숨지 않게 한다.
+    const filtering = searchInput.value.trim() !== '' || levelFilter.value !== 'all' || languageFilter.value !== 'all' || statusFilter.value !== 'all'
+    list.render(visibleLevels(), '맞는 문제가 없습니다.', filtering)
     const c = window.progressLib.countStatuses(scan.levels, statusOf)
     progressSummary.textContent = `통과 ${c.passed} / 작성 중 ${c.working} / 전체 ${c.total}`
   }
@@ -238,6 +257,10 @@
     document.getElementById('status-tools').textContent = `Java ${clean(t.java)}  Python ${clean(t.python)}  Node ${clean(t.node)}`
   })
   levelFilter.addEventListener('change', refreshList)
+  languageFilter.addEventListener('change', () => {
+    writeSaved(LANGUAGE_FILTER_KEY, languageFilter.value)
+    refreshList()
+  })
   statusFilter.addEventListener('change', refreshList)
   document.getElementById('root-button').addEventListener('click', async () => {
     await editorPane.flush() // 폴더가 바뀌기 전에 편집 중인 내용을 원래 폴더에 저장해 둔다.
