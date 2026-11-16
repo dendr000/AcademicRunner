@@ -2,7 +2,7 @@
 
 ## 무엇인가
 
-AcademicRunner 의 빈 창입니다. 아이콘, 작업 표시줄 설정, 라이트/다크 전환까지만 들어 있고 문제 목록과 편집기는 다음 단계에서 추가합니다.
+풀이터(Puliteo)의 빈 창입니다. 아이콘, 작업 표시줄 설정, 라이트/다크 전환까지만 들어 있고 문제 목록과 편집기는 다음 단계에서 추가합니다.
 
 ## 구성 용어 설명
 
@@ -11,7 +11,7 @@ AcademicRunner 의 빈 창입니다. 아이콘, 작업 표시줄 설정, 라이�
 | 메인 프로세스 | 창을 만들고 파일·프로그램 실행을 맡는 쪽(`electron/main.js`). 컴퓨터 자원에 접근할 수 있다. |
 | 렌더러 | 화면을 그리는 쪽(`src/`). 보안을 위해 컴퓨터 자원에 직접 접근하지 못한다. |
 | preload | 화면이 쓸 수 있는 함수만 골라 열어 주는 다리(`electron/preload.js`). 화면에서는 `window.runnerApi` 로 보인다. |
-| AppUserModelId | Windows 가 "같은 앱"인지 판단하는 이름. 작업 표시줄 고정과 실행 중 창을 묶는다. 값은 `com.academicrunner.app` 이고 바꾸지 않는다. |
+| AppUserModelId | Windows 가 "같은 앱"인지 판단하는 이름. 작업 표시줄 고정과 실행 중 창을 묶는다. 값은 `com.puliteo.app` 이고 바꾸지 않는다. |
 | 색 토큰 | 색에 이름을 붙여 한 곳(`src/styles/tokens.css`)에 모아 둔 값. 라이트/다크는 이 변수만 바꿔 전환한다. |
 
 ## 동작
@@ -30,4 +30,4 @@ AcademicRunner 의 빈 창입니다. 아이콘, 작업 표시줄 설정, 라이�
 | exe 만들기 | `npm run dist:win` |
 | exe 파일 정보 확인 | `npm run verify:exe` |
 
-exe 는 `release-packager\AcademicRunner-win32-x64\AcademicRunner.exe` 에 만들어진다. 이 경로를 바꾸면 작업 표시줄에 고정한 바로가기가 깨진다.
+exe 는 `release-packager\Puliteo-win32-x64\Puliteo.exe` 에 만들어진다. 이 경로를 바꾸면 작업 표시줄에 고정한 바로가기가 깨진다.

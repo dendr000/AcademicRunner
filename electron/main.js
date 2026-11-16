@@ -2,12 +2,20 @@
 const { app, BrowserWindow, nativeTheme, ipcMain, Menu } = require('electron')
 const path = require('node:path')
 const { registerIpcHandlers } = require('./ipc-handlers')
+const { migrateUserData } = require('./core/migrate-user-data')
 
-const APP_ID = 'com.academicrunner.app'
+const APP_ID = 'com.puliteo.app'
 
 // 작업 표시줄 그룹·고정의 정체성. 창을 만들기 전에 호출해야 한다. package.json 의 appId 와 같은 값.
-app.setName('AcademicRunner')
+app.setName('Puliteo')
 app.setAppUserModelId(APP_ID)
+
+// 옛 이름(AcademicRunner)의 설정 폴더에 있던 설정·통과 기록을 새 폴더로 한 번 가져온다. 실패해도 앱은 켜진다.
+try {
+  migrateUserData(app.getPath('appData'), app.getPath('userData'))
+} catch {
+  // 가져오기를 못 해도 새 설정으로 시작한다.
+}
 
 // 두 번 실행되어 아이콘이 둘 생기는 것을 막는다.
 const gotLock = app.requestSingleInstanceLock()
@@ -23,7 +31,7 @@ function createWindow() {
     height: 800,
     minWidth: 960,
     minHeight: 600,
-    title: 'AcademicRunner',
+    title: '풀이터',
     // 첫 화면이 번쩍이지 않도록 시스템 테마에 맞는 배경색을 미리 준다.
     backgroundColor: nativeTheme.shouldUseDarkColors ? '#1b1e24' : '#f6f7f9',
     // 개발 모드(electron .)에서도 앱 아이콘이 보이게 한다. 패키징된 exe 는 exe 안의 아이콘을 쓴다.

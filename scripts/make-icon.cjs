@@ -16,7 +16,7 @@ let win = null
 
 async function open() {
   win = new BrowserWindow({ width: 256, height: 256, show: false, frame: false, transparent: true, webPreferences: { offscreen: true } })
-  const file = path.join(os.tmpdir(), 'academicrunner-icon.html')
+  const file = path.join(os.tmpdir(), 'puliteo-icon.html')
   fs.writeFileSync(file, '<html><body style="margin:0;background:transparent;overflow:hidden">' + svg + '</body></html>')
   await win.loadFile(file)
 }

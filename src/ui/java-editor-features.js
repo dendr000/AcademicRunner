@@ -37,7 +37,7 @@
         return {
           severity: d.severity === 'error' ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
           message: d.message,
-          source: 'AcademicRunner',
+          source: '풀이터',
           startLineNumber: start.lineNumber,
           startColumn: start.column,
           endLineNumber: end.lineNumber,

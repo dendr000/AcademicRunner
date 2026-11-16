@@ -1,13 +1,13 @@
 // Copyright (c) dendr000. MIT License.
-// AcademicRunner 를 win32-x64 독립 실행 폴더로 패키징한다 (@electron/packager).
-// 이름은 로마자 AcademicRunner 로 고정한다(한글 이름은 패키저에서 경로가 어긋난 전례가 있다).
+// Puliteo 를 win32-x64 독립 실행 폴더로 패키징한다 (@electron/packager).
+// 이름은 로마자 Puliteo 로 고정한다(한글 이름은 패키저에서 경로가 어긋난 전례가 있다).
 // 출력 경로를 바꾸지 않는다: 바꾸면 작업 표시줄에 고정한 바로가기가 깨진다.
 const { packager } = require('@electron/packager')
 const path = require('node:path')
 const fs = require('node:fs')
 
 const root = path.join(__dirname, '..')
-const APP_NAME = 'AcademicRunner'
+const APP_NAME = 'Puliteo'
 const outDir = path.join(root, 'release-packager', `${APP_NAME}-win32-x64`)
 
 // 허용 목록: 실행에 필요한 것만 넣는다(소스 중 electron, src, assets 와 package.json, 라이선스).
@@ -62,15 +62,15 @@ async function main() {
     platform: 'win32',
     arch: 'x64',
     overwrite: true,
-    appCopyright: 'AcademicRunner - dendr000 - MIT',
+    appCopyright: 'Puliteo - dendr000 - MIT',
     name: APP_NAME,
     // exe 에 아이콘을 넣지 않으면 기본 Electron 아이콘이 되어 작업 표시줄 고정 때 이상하게 보인다.
     icon: path.join(root, 'build', 'icon.ico'),
     // 파일 정보(작업 표시줄 마우스오버, 작업 관리자 이름). 비우면 'Electron' 으로 남는다.
     win32metadata: {
       CompanyName: 'dendr000',
-      FileDescription: 'AcademicRunner',
-      ProductName: 'AcademicRunner',
+      FileDescription: 'Puliteo',
+      ProductName: 'Puliteo',
       InternalName: APP_NAME,
       OriginalFilename: `${APP_NAME}.exe`,
     },

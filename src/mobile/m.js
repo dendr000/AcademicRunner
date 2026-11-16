@@ -24,7 +24,7 @@
   function show(name) {
     for (const id of ['login', 'list', 'code']) $(id).hidden = id !== name
     $('back').hidden = name !== 'code'
-    if (name !== 'code') $('title').textContent = 'AcademicRunner'
+    if (name !== 'code') $('title').textContent = '풀이터'
   }
 
   function status(text, isError) {

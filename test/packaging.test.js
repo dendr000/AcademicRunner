@@ -43,7 +43,7 @@ test('패키징 설정에 아이콘과 파일 정보가 들어 있다', () => {
   const src = fs.readFileSync(path.join(root, 'scripts', 'package-win.js'), 'utf8')
   assert.match(src, /icon:\s*path\.join\(root,\s*'build',\s*'icon\.ico'\)/)
   assert.match(src, /win32metadata/)
-  assert.match(src, /ProductName:\s*'AcademicRunner'/)
+  assert.match(src, /ProductName:\s*'Puliteo'/)
 })
 
 test('exe 이름은 로마자이고 package.json 과 일치한다', () => {
