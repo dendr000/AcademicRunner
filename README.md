@@ -6,6 +6,21 @@
 - 계획서: [docs/plans/00-master-plan.md](docs/plans/00-master-plan.md)
 - 문제 풀이 보관 폴더: 기본 `C:\dev\AcademicTest`, 그 폴더가 없으면 저장소의 [samples](samples/README.md) (앱의 "폴더 선택"으로 변경)
 
+## 화면
+
+입출력 문제는 입력 탭에 값을 적고 실행하면 출력 탭에 결과가 나옵니다.
+
+![입출력 문제 실행](docs/images/run-java.png)
+
+함수만 있는 문제는 케이스 탭에서 인수와 기대 반환값을 만들어 "전부 실행"으로 한 번에 시험합니다.
+
+![함수 문제 케이스 실행](docs/images/function-cases.png)
+
+SQL 문제는 기본 표(student 등)가 자동으로 들어가고, "표" 탭에서 표의 열과 내용을 볼 수 있습니다.
+
+![SQL 표 보기](docs/images/sql-tables.png)
+
+(화면은 `samples` 폴더의 문제로 찍었습니다.)
 ## 실행
 
 ```bash
