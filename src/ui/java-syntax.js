@@ -94,7 +94,26 @@
     return out
   }
 
-  const api = { checkBrackets, checkDuplicateKeywords, checkConditionAssign, checkLiteralTypes }
+  // name == "abc" 처럼 문자열 리터럴을 == / != 로 비교한 곳(값이 아니라 주소를 비교해 틀린 결과가 나온다). 연산자를 표시한다.
+  function checkStringCompare(code, source) {
+    const out = []
+    const re = /[=!]=(?!=)/g
+    let m
+    while ((m = re.exec(code)) && out.length < 20) {
+      if (m.index > 0 && '=!<>'.includes(code[m.index - 1])) continue
+      let after = m.index + 2
+      while (after < source.length && /\s/.test(source[after])) after++
+      let before = m.index - 1
+      while (before >= 0 && /\s/.test(source[before])) before--
+      // 연산자 오른쪽이 따옴표로 시작하거나, 왼쪽이 따옴표로 끝나며(코드에서는 공백으로 지워진 자리) 그 자리가 실제 문자열일 때
+      const rightLiteral = source[after] === '"' && code[after] === ' '
+      const leftLiteral = before >= 0 && source[before] === '"' && code[before] === ' '
+      if (rightLiteral || leftLiteral) out.push({ start: m.index, end: m.index + 2, severity: 'warning', message: '문자열은 == 로 비교하면 같은 글자여도 false 가 나올 수 있습니다. a.equals("abc") 로 비교하세요.' })
+    }
+    return out
+  }
+
+  const api = { checkBrackets, checkDuplicateKeywords, checkConditionAssign, checkLiteralTypes, checkStringCompare }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   else root.javaSyntax = api
 })(typeof window !== 'undefined' ? window : globalThis)

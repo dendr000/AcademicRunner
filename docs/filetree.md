@@ -63,6 +63,7 @@ AcademicRunner/
     ui/new-completion.js  new 뒤 클래스 제안과 꺾쇠 자동 닫기 판단(순수 함수)
     ui/param-hints.js     매개변수 이름 힌트 계산(순수 함수)
     ui/java-syntax.js     괄호·키워드 중복·조건식 =·리터럴 타입 점검(순수 함수)
+    ui/java-arity.js      메서드·생성자 인수 개수 점검(순수 함수)
     ui/java-scope.js      변수 선언·범위 점검(순수 함수)
     ui/java-diagnostics.js 타입 오타·빠진 import 점검과 위 점검 합치기(순수 함수)
     ui/java-editor-features.js 위 둘을 Monaco 에 연결

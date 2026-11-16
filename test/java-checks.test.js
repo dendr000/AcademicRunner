@@ -119,3 +119,32 @@ test('빈 입력, 아주 큰 입력, 깨진 코드에도 죽지 않는다', () =
   assert.deepStrictEqual(analyzeAll('x'.repeat(300000)), [])
   assert.doesNotThrow(() => analyzeAll('class { ) ( } }} {{ int'))
 })
+
+test('문자열 리터럴을 == 로 비교하면 경고한다. 변수끼리·null 비교·문자열 안의 ==는 정상', () => {
+  const bad = 'class A { boolean f(String s) { return s == "abc" || "x" != s; } }'
+  const d = analyzeAll(bad).filter((x) => /equals/.test(x.message))
+  assert.strictEqual(d.length, 2)
+  assert.deepStrictEqual(d.map((x) => bad.slice(x.start, x.end)), ['==', '!='])
+  for (const ok of ['class A { boolean f(String a, String b) { return a == b || a == null || a.equals("x"); } }', 'class A { String s = "a == b"; boolean f(int x) { return x == 3 && x >= 1 && x <= 5 && x != 2; } }', 'class A { char c; boolean f() { return c == \'a\'; } }']) {
+    assert.deepStrictEqual(analyzeAll(ok).filter((x) => /equals/.test(x.message)), [], ok)
+  }
+})
+
+test('직접 만든 메서드·생성자의 인수 개수가 틀리면 알린다', () => {
+  const src = 'class A {\n A(int x) {}\n int f(int a, int b) { return a; }\n void g() { f(1); f(1, 2); new A(); new A(1); g(5); }\n}'
+  const d = analyzeAll(src).filter((x) => /인수를/.test(x.message))
+  assert.deepStrictEqual(d.map((x) => src.slice(x.start, x.end)), ['f', 'A', 'g'])
+  assert.match(d[0].message, /2개 받는데 1개/)
+})
+
+test('인수 개수 점검: 오버로드, 가변 인수, 받는 변수가 있는 호출, 선언, 상속, 라이브러리 호출은 건너뛴다', () => {
+  const ok = [
+    'class A { int f(int a) { return a; } int f(int a, int b) { return a; } void g() { f(1); f(1, 2); } }',
+    'class A { int f(int... a) { return 0; } void g() { f(); f(1, 2, 3); } }',
+    'class A { int f(int a) { return a; } void g(B b) { b.f(1, 2); list.add(1, 2, 3); Math.max(1, 2); } }',
+    'class A { void g() { String s = String.valueOf(1); System.out.println(1, 2); } }',
+    'class A extends B { void g() { h(1); } void h() { } }',
+    'class A { int[] a = new int[3]; void g() { int x = Math.max(f(1, 2), 3); } int f(int a, int b) { return a; } }',
+  ]
+  for (const src of ok) assert.deepStrictEqual(analyzeAll(src).filter((x) => /인수를/.test(x.message)), [], src)
+})

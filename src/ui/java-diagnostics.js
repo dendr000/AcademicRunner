@@ -9,6 +9,7 @@
   const jc = node ? require('./java-classes') : root.javaClasses
   const syntax = node ? require('./java-syntax') : root.javaSyntax
   const scope = node ? require('./java-scope') : root.javaScope
+  const arity = node ? require('./java-arity') : root.javaArity
 
   // java.lang 은 import 가 필요 없다.
   const LANG = 'String Integer Long Double Float Short Byte Character Boolean Number Object Math System StringBuilder StringBuffer Thread Runnable Exception RuntimeException Error Throwable Iterable Comparable CharSequence Void Class Enum Record StackOverflowError ArithmeticException NullPointerException IllegalArgumentException IllegalStateException IndexOutOfBoundsException ArrayIndexOutOfBoundsException NumberFormatException ClassCastException InterruptedException Override Deprecated FunctionalInterface SuppressWarnings SafeVarargs'.split(' ')
@@ -128,7 +129,11 @@
     const code = blanked.replace(/\b(?:import|package)\s[^;]*;/g, (s) => s.replace(/[^\n]/g, ' '))
     const brackets = syntax.checkBrackets(code)
     const found = [...analyzeJava(source), ...brackets, ...syntax.checkDuplicateKeywords(code), ...syntax.checkConditionAssign(code), ...syntax.checkLiteralTypes(code, source)]
-    if (brackets.length === 0) found.push(...variableDiagnostics(code, blanked))
+    found.push(...syntax.checkStringCompare(code, source))
+    if (brackets.length === 0) {
+      found.push(...variableDiagnostics(code, blanked))
+      if (scope.canAnalyze(blanked)) found.push(...arity.checkArity(code, source))
+    }
     return found.sort((a, b) => a.start - b.start || a.end - b.end)
   }
 
