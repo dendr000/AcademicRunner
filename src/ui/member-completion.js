@@ -12,10 +12,20 @@
     javascript: 'async await break case catch class const continue default do else export extends false finally for function if import in instanceof let new null return super switch this throw true try typeof undefined var void while yield console Math Number String Array Object JSON Map Set Promise parseInt parseFloat',
   }
 
-  // 자주 쓰는 예약어·클래스는 이 순서로 먼저 보인다. 나머지는 이름순.
-  const COMMON = 'return if for while else int String new break continue public private static void class true false null System Math List ArrayList HashMap switch case try catch boolean double long char'.split(' ')
-  const rank = (name) => {
-    const i = COMMON.indexOf(name)
+  // 자주 쓰는 예약어·클래스는 이 순서로 먼저 보인다(언어마다 따로). 나머지는 이름순.
+  const JAVA_COMMON = 'return if for while else int String new break continue public private static void class true false null System Math List ArrayList HashMap switch case try catch boolean double long char'
+  const C_COMMON = 'return if for while else int char double float long void struct break continue switch case include define printf scanf sizeof const unsigned static true false NULL string vector cout cin endl std'
+  const COMMON = {
+    java: JAVA_COMMON.split(' '),
+    c: C_COMMON.split(' '),
+    cpp: C_COMMON.split(' '),
+    python: 'return if elif else for while in range print input len def import from class True False None and or not break continue int str float list dict set sorted enumerate zip sum min max abs try except with as pass'.split(' '),
+    javascript: 'const let var function return if else for while of in console switch case break continue true false null undefined new class this async await Math JSON Array Object String Number try catch'.split(' '),
+    sql: 'SELECT FROM WHERE AND OR NOT IN GROUP BY ORDER HAVING ASC DESC LIMIT JOIN INNER LEFT ON AS DISTINCT COUNT SUM AVG MAX MIN LIKE BETWEEN IS NULL CASE WHEN THEN ELSE END INSERT INTO VALUES UPDATE SET DELETE CREATE TABLE UNION WITH OVER PARTITION ROUND'.split(' '),
+  }
+  const rank = (name, language) => {
+    const list = COMMON[language] || COMMON.java
+    const i = list.indexOf(name)
     return i < 0 ? '99' + name : String(i).padStart(2, '0')
   }
 
@@ -42,7 +52,7 @@
       kind: kw.has(name) ? monaco.languages.CompletionItemKind.Keyword : monaco.languages.CompletionItemKind.Variable,
       insertText: name,
       // 정렬: 파일 안의 변수·이름(0) -> 단축 입력(1, snippets.js) -> 언어 키워드(2)
-      sortText: kw.has(name) ? '2' + rank(name) : '0' + name,
+      sortText: kw.has(name) ? '2' + rank(name, language) : '0' + name,
       range,
     }))
   }

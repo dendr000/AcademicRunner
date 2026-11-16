@@ -1,5 +1,10 @@
 # 업데이트 내역 (CHANGELOG)
 
+## [1.22.1] - 2026-11-16 14:20
+
+### 수정 (Fixed)
+- SQL 에서 `wh` 를 치면 WHEN 이 WHERE 보다 위에 뜨던 문제. SQL 에서 자주 쓰는 SELECT, FROM, WHERE, AND, GROUP BY, ORDER BY, JOIN, COUNT 등이 먼저 나오도록 언어별(SQL·Python·JS·C·C++) 자주 쓰는 목록을 따로 둠
+
 ## [1.22.0] - 2026-11-16 14:00
 
 ### 추가 (Added)
