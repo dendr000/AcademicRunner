@@ -1,5 +1,5 @@
 // Copyright (c) dendr000. MIT License.
-// 이 PC 에 설치된 실행 도구(javac, java, python)를 찾는다. 찾은 결과는 실행 중 한 번만 계산해 둔다.
+// 이 PC 에 설치된 실행 도구(javac, java, python)를 찾는다. 찾은 결과는 계속 쓰되, 못 찾았거나 찾아 둔 파일이 사라졌으면 다음 실행 때 다시 찾는다.
 const fs = require('node:fs')
 const path = require('node:path')
 const { spawnSync } = require('node:child_process')
@@ -65,8 +65,14 @@ function locatePython(env) {
 }
 
 const cache = {}
+// 찾은 도구의 실행 파일이 아직 있으면 그대로 쓴다. 없으면(못 찾았거나 삭제·이동) 다시 찾는다.
+function stillThere(found) {
+  if (!found) return false
+  return [found.javac, found.java, found.python].filter(Boolean).every(isFile)
+}
+
 function cached(key, finder) {
-  if (!(key in cache)) cache[key] = finder()
+  if (!stillThere(cache[key])) cache[key] = finder()
   return cache[key]
 }
 
@@ -79,6 +85,7 @@ module.exports = {
   python: () => cached('python', () => locatePython()),
   // 앱 자체가 Node 를 품고 있다(Electron). ELECTRON_RUN_AS_NODE=1 로 실행하면 일반 Node 처럼 동작한다.
   node: () => ({ node: process.execPath, version: 'Node ' + process.versions.node }),
+  cached,
   resetCache() {
     for (const k of Object.keys(cache)) delete cache[k]
   },

@@ -72,6 +72,7 @@ AcademicRunner/
     ui/keymap.js          동작 목록·기본 키·충돌 검사·저장(순수 로직)
     ui/shortcuts.js       동작 등록소와 키 처리
     ui/menubar.js         최상단 메뉴바
+    ui/focus-trap.js      대화창 안에서만 Tab 이 돌게 함
     ui/keymap-dialog.js   단축키 설정 창
     ui/editor-settings.js 편집기 설정 기본값·검사·저장(순수 로직)
     ui/editor-settings-dialog.js 환경 설정 창
@@ -110,6 +111,7 @@ AcademicRunner/
     param-hints.test.js     매개변수 이름 힌트
     java-diagnostics.test.js 타입 오타·빠진 import 점검
     java-checks.test.js     괄호·키워드 중복·리터럴·변수 범위 점검
+    tool-cache.test.js      도구 위치 캐시(못 찾음·사라짐 재탐색)
     interactive-input.test.js  실시간 입력(콘솔처럼)
     settings-timeout.test.js  시간 제한 설정
 ```

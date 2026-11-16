@@ -74,6 +74,7 @@
         stopCapture()
         return
       }
+      if (window.focusTrap.handleTab(overlay, e)) return
       if (e.key === 'Escape') {
         e.preventDefault()
         e.stopPropagation()
