@@ -36,7 +36,11 @@
     const tabInput = el('button', 'run-tab active', '입력')
     const tabOutput = el('button', 'run-tab', '출력')
     const tabCases = el('button', 'run-tab', '케이스')
-    for (const t of [tabInput, tabOutput, tabCases]) t.type = 'button'
+    // 표 탭: SQL 문제에서만 보인다(지금 쓸 수 있는 표와 내용).
+    const tabTables = el('button', 'run-tab', '표')
+    tabTables.title = '지금 풀이에서 쓸 수 있는 표와 내용(SELECT * FROM 표)을 봅니다'
+    tabTables.hidden = true
+    for (const t of [tabInput, tabOutput, tabCases, tabTables]) t.type = 'button'
     // 단축키 안내(hint)는 패널이 좁으면 CSS 로 숨겨 버튼이 줄바꿈되지 않게 한다.
     // 안내하는 키는 사용자가 바꿀 수 있으므로 단축키 표(window.keymap)에서 읽고, 바뀌면 다시 쓴다.
     const hintRefreshers = []
@@ -64,7 +68,7 @@
     stopButton.disabled = true
     saveCaseButton.disabled = true
     const statusEl = el('span', 'run-status')
-    bar.append(tabInput, tabOutput, tabCases, el('span', 'spacer'), statusEl, saveCaseButton, runButton, stopButton, compileButton)
+    bar.append(tabInput, tabOutput, tabCases, tabTables, el('span', 'spacer'), statusEl, saveCaseButton, runButton, stopButton, compileButton)
 
     const inputArea = el('textarea', 'run-input')
     inputArea.spellcheck = false
@@ -84,6 +88,13 @@
       },
     })
     casesPanel.element.hidden = true
+    const tablesPanel = window.createSqlTablesPanel(api, {
+      currentFile: () => hooks.currentFile(),
+      prepareRun: () => hooks.prepareRun(),
+      getInput: () => inputArea.value,
+      onStatus: (text, kind) => setStatus(text, kind),
+    })
+    tablesPanel.element.hidden = true
     // 실시간 입력줄: 입력 탭이 비어 있을 때 실행하면 출력 탭 아래에 나타난다(콘솔처럼 한 줄씩 입력).
     const liveRow = el('div', 'run-live')
     const liveInput = el('input', 'run-live-input')
@@ -98,7 +109,7 @@
     for (const b of [liveSend, liveEof]) b.type = 'button'
     liveRow.append(liveInput, liveSend, liveEof)
     liveRow.hidden = true
-    root.append(bar, inputArea, output, liveRow, casesPanel.element)
+    root.append(bar, inputArea, output, liveRow, casesPanel.element, tablesPanel.element)
     let lastRun = null // 마지막으로 성공한 실행의 { input, stdout } (케이스로 저장용)
 
     let currentProblemId = null
@@ -119,10 +130,13 @@
       tabInput.classList.toggle('active', name === 'input')
       tabOutput.classList.toggle('active', name === 'output')
       tabCases.classList.toggle('active', name === 'cases')
+      tabTables.classList.toggle('active', name === 'tables')
       inputArea.hidden = name !== 'input'
       output.hidden = name !== 'output'
       casesPanel.element.hidden = name !== 'cases'
+      tablesPanel.element.hidden = name !== 'tables'
       updateLive()
+      if (name === 'tables') tablesPanel.refresh()
     }
 
     function setRunning(value) {
@@ -276,6 +290,7 @@
       lastRun = null
       saveCaseButton.disabled = true
       casesPanel.onOpened(problem)
+      tabTables.hidden = !(problem.files || []).some((f) => f.language === 'sql')
       inputArea.placeholder =
         problem.kind === 'function'
           ? '함수 문제는 입력을 읽지 않습니다. "케이스" 탭에서 인수와 기대 반환값을 만들고 실행(F5)하면 케이스를 전부 실행합니다.'
@@ -294,6 +309,7 @@
     tabInput.addEventListener('click', () => showTab('input'))
     tabOutput.addEventListener('click', () => showTab('output'))
     tabCases.addEventListener('click', () => showTab('cases'))
+    tabTables.addEventListener('click', () => showTab('tables'))
     saveCaseButton.addEventListener('click', async () => {
       if (!lastRun) return
       const c = await casesPanel.addFromRun(lastRun.input, lastRun.stdout)

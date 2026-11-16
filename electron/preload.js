@@ -31,6 +31,7 @@ contextBridge.exposeInMainWorld('runnerApi', {
   resetSqlPreset: (id) => ipcRenderer.invoke('sqlPresets:reset', id),
   addSqlPreset: (id, sql) => ipcRenderer.invoke('sqlPresets:add', id, sql),
   removeSqlPreset: (id) => ipcRenderer.invoke('sqlPresets:remove', id),
+  inspectSqlTables: (problemId, fileName, input) => ipcRenderer.invoke('sqlTables:inspect', problemId, fileName, input),
   getToolInfo: () => ipcRenderer.invoke('tools:info'),
   // 실행 중 출력과 종료 결과가 온다. 해제 함수를 돌려준다.
   onRunEvent: (callback) => {

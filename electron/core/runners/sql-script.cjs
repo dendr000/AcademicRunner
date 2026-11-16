@@ -123,4 +123,6 @@ function main() {
   }
 }
 
-main()
+// 표 보기(sql-tables.js)가 같은 문장 나누기를 쓰도록 내보낸다. 실행기가 직접 돌릴 때만 main 을 부른다.
+module.exports = { splitStatements }
+if (require.main === module) main()

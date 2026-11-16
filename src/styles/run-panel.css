@@ -289,3 +289,80 @@
 }
 
 .cases-result[hidden] { display: none; }
+
+/* 표 탭(SQL): 표 고르기 줄, 열 이름, 내용 격자. 글자는 줄바꿈하지 않고 칸이 넘치면 가로로 스크롤한다. */
+.tables-panel {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  background: var(--bg);
+}
+.tables-panel[hidden] { display: none; }
+.tables-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--border);
+}
+.tables-head > * { flex: none; }
+.tables-head > .spacer { flex: 1 1 0; min-width: 0; }
+.tables-head > .tables-chips { flex: 0 1 auto; min-width: 0; }
+.tables-head .text-button { white-space: nowrap; }
+.tables-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.tables-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 26px;
+  padding: 0 10px;
+  color: var(--text);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font: inherit;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.tables-chip.active {
+  color: var(--accent-contrast);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.tables-chip-count { font-size: 11px; opacity: 0.75; }
+.tables-info,
+.tables-message {
+  padding: 4px 12px;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+.tables-info:empty { display: none; }
+.tables-message[data-kind="error"] { color: var(--danger); }
+.tables-message[hidden] { display: none; }
+.tables-columns { display: flex; flex-wrap: wrap; gap: 6px 10px; padding: 4px 12px 6px; }
+.tables-columns:empty { display: none; }
+.tables-col { display: inline-flex; gap: 5px; white-space: nowrap; font-family: D2Coding, Consolas, monospace; font-size: 12px; }
+.tables-col-name { color: var(--text); font-weight: 600; }
+.tables-col-type { color: var(--text-muted); }
+.tables-grid-wrap { flex: 1; min-height: 0; overflow: auto; }
+.tables-grid {
+  border-collapse: collapse;
+  font-family: D2Coding, Consolas, "Malgun Gothic", monospace;
+  font-size: 13px;
+}
+.tables-grid th,
+.tables-grid td {
+  padding: 3px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  white-space: nowrap;
+}
+.tables-grid th {
+  position: sticky;
+  top: 0;
+  color: var(--text-muted);
+  background: var(--surface);
+  font-weight: 600;
+}
+.tables-null { color: var(--text-muted); font-style: italic; }

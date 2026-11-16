@@ -41,6 +41,7 @@ AcademicRunner/
       harness/java-harness.js  Java 함수 문제 호출 코드 생성
       runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js, c-family.js, sql.js, sql-script.cjs, sql-presets/ 기본 데이터 .sql)
     core/sql-preset-store.js  SQL 기본 데이터 수정본·사용자 묶음 저장소
+    core/sql-tables.js    SQL 표 보기: 풀이에서 쓸 수 있는 표의 열·내용 조사(메모리 DB)
   scripts/
     make-icon.cjs      icon.svg 에서 icon.ico 생성
     package-win.js     exe 패키징(허용 목록 방식)
@@ -61,6 +62,7 @@ AcademicRunner/
     ui/snippet-data.js    단축 입력(스니펫) 목록(순수 데이터)
     ui/snippet-data-more.js  C/C++/SQL 단축 입력 목록
     ui/sql-presets-dialog.js  SQL 기본 데이터 편집 창
+    ui/sql-tables-panel.js    실행 패널의 "표" 탭(SQL 전용)
     ui/snippets.js        스니펫을 편집기에 등록
     ui/java-classes.js    같은 파일의 내 클래스 필드·메서드 읽기(순수 함수)
     ui/new-completion.js  new 뒤 클래스 제안과 꺾쇠 자동 닫기 판단(순수 함수)
@@ -112,6 +114,7 @@ AcademicRunner/
     snippet-data.test.js    스니펫 목록 형식
     run-service-sql-c.test.js  SQL 실행·C/C++ 러너 준비 단계
     sql-preset-store.test.js  SQL 기본 데이터 저장소와 묶음 선택
+    sql-tables.test.js      SQL 표 보기(표·열·행 조사)
     member-data.test.js     변수 종류 짐작·점 자동 완성 목록
     new-completion.test.js  new 뒤 제안·꺾쇠 자동 닫기
     param-hints.test.js     매개변수 이름 힌트

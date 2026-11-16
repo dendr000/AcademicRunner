@@ -9,6 +9,7 @@ const { createRunService } = require('./core/run-service')
 const { runners } = require('./core/runners')
 const { builtinList } = require('./core/runners/sql')
 const { createSqlPresetStore } = require('./core/sql-preset-store')
+const { inspectTables } = require('./core/sql-tables')
 const { createSettingsStore } = require('./core/settings')
 const { progressAll, progressOne } = require('./core/progress-status')
 const path = require('node:path')
@@ -58,6 +59,12 @@ function registerIpcHandlers(getWindow, appId) {
   ipcMain.handle('sqlPresets:reset', (_e, id) => sqlPresets.reset(id))
   ipcMain.handle('sqlPresets:add', (_e, id, sql) => sqlPresets.add(id, sql))
   ipcMain.handle('sqlPresets:remove', (_e, id) => sqlPresets.remove(id))
+  // SQL "표 보기": 저장된 풀이 파일(과 입력 탭의 준비 SQL)로 지금 쓸 수 있는 표와 내용을 조사한다. 읽기만 한다.
+  ipcMain.handle('sqlTables:inspect', (_e, problemId, fileName, input) => {
+    const read = files.readSolution(settings.get().root, problemId, fileName)
+    if (!read.ok) return { ok: false, error: '풀이 파일을 읽지 못했습니다 (' + read.error + ')' }
+    return inspectTables(read.content, typeof input === 'string' ? input.slice(0, 200000) : '', sqlPresets.forRun())
+  })
   const runService = createRunService({ runners, tools: { ...tools, sqlPresets: () => sqlPresets.forRun() } })
   let activeRun = null
   let runCounter = 0
