@@ -62,7 +62,8 @@
 .problem-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: 4px 8px;
   width: 100%;
   padding: 7px 14px;
   color: var(--text);
@@ -95,6 +96,14 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.problem-tags {
+  flex: 0 0 100%;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding-left: 38px;
 }
 
 .chip {

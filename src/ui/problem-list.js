@@ -40,9 +40,12 @@
             dot.setAttribute('aria-label', STATUS_LABEL[status] || '')
             row.insertBefore(dot, row.firstChild)
           }
-          row.appendChild(el('span', 'chip chip-kind', KIND_LABEL[problem.kind] || '-'))
+          // 태그는 제목 아래 줄에 따로 둔다(좁은 목록에서 제목이 가려지지 않게, 넘치면 태그가 다음 줄로 접힘).
+          const tags = el('span', 'problem-tags')
+          tags.appendChild(el('span', 'chip chip-kind', KIND_LABEL[problem.kind] || '-'))
           const langs = [...new Set(problem.files.map((f) => f.language))]
-          for (const lang of langs) row.appendChild(el('span', 'chip chip-lang', LANGUAGE_LABEL[lang] || lang))
+          for (const lang of langs) tags.appendChild(el('span', 'chip chip-lang', LANGUAGE_LABEL[lang] || lang))
+          row.appendChild(tags)
           row.addEventListener('click', () => {
             selectedId = problem.id
             for (const r of container.querySelectorAll('.problem-row.selected')) r.classList.remove('selected')
