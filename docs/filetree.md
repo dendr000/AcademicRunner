@@ -42,6 +42,7 @@ AcademicRunner/
       runners/         언어별 러너(index.js 목록, java.js, python.js, javascript.js, c-family.js, sql.js, sql-script.cjs, sql-presets/ 기본 데이터 .sql)
     core/sql-preset-store.js  SQL 기본 데이터 수정본·사용자 묶음 저장소
     core/sql-tables.js    SQL 표 보기: 풀이에서 쓸 수 있는 표의 열·내용 조사(메모리 DB)
+  samples/             샘플 문제 5개의 시작 코드(+ original, README)
   scripts/
     make-icon.cjs      icon.svg 에서 icon.ico 생성
     package-win.js     exe 패키징(허용 목록 방식)
@@ -115,6 +116,7 @@ AcademicRunner/
     run-service-sql-c.test.js  SQL 실행·C/C++ 러너 준비 단계
     sql-preset-store.test.js  SQL 기본 데이터 저장소와 묶음 선택
     sql-tables.test.js      SQL 표 보기(표·열·행 조사)
+    samples.test.js         샘플 문제 폴더와 기본 문제 폴더 선택
     member-data.test.js     변수 종류 짐작·점 자동 완성 목록
     new-completion.test.js  new 뒤 제안·꺾쇠 자동 닫기
     param-hints.test.js     매개변수 이름 힌트

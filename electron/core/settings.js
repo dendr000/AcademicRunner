@@ -15,6 +15,16 @@ const DEFAULTS = {
   mobileToken: '',
 }
 
+// 문제 폴더의 처음 값: 내 PC 의 기본 폴더가 있으면 그것을, 없으면 저장소에 든 샘플 문제(samples)를 쓴다.
+// 설치본(asar 안)의 샘플은 쓰기가 안 되므로 쓰지 않는다. exists 는 시험용으로 바꿀 수 있다.
+function defaultRoot(exists) {
+  const has = exists || ((p) => fs.existsSync(p))
+  const samples = path.join(__dirname, '..', '..', 'samples')
+  if (has(DEFAULTS.root)) return DEFAULTS.root
+  if (!samples.includes('.asar') && has(samples)) return samples
+  return DEFAULTS.root
+}
+
 const MIN_TIMEOUT_SEC = 1
 const MAX_TIMEOUT_SEC = 120
 
@@ -39,7 +49,7 @@ function createSettingsStore(dir) {
   }
 
   function get() {
-    const merged = { ...DEFAULTS, ...read() }
+    const merged = { ...DEFAULTS, root: defaultRoot(), ...read() }
     if (!validTimeout(merged.timeoutSec)) merged.timeoutSec = DEFAULTS.timeoutSec // 깨진 값은 기본값으로
     if (typeof merged.mobileEnabled !== 'boolean') merged.mobileEnabled = DEFAULTS.mobileEnabled
     if (!validPort(merged.mobilePort)) merged.mobilePort = DEFAULTS.mobilePort
@@ -64,4 +74,4 @@ function createSettingsStore(dir) {
   return { get, set, file }
 }
 
-module.exports = { createSettingsStore, DEFAULTS }
+module.exports = { createSettingsStore, DEFAULTS, defaultRoot }

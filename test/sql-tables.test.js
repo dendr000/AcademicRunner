@@ -1,7 +1,18 @@
 // Copyright (c) dendr000. MIT License.
-const test = require('node:test')
+const baseTest = require('node:test')
 const assert = require('node:assert/strict')
 const { inspectTables, MAX_ROWS } = require('../electron/core/sql-tables')
+
+// node:sqlite 가 없는 Node 에서는 이 파일의 시험을 건너뛴다.
+const hasSqlite = (() => {
+  try {
+    require('node:sqlite')
+    return true
+  } catch {
+    return false
+  }
+})()
+const test = (name, fn) => baseTest(name, { skip: hasSqlite ? false : 'node:sqlite 가 없어 건너뜀' }, fn)
 
 const names = (r) => r.tables.map((t) => t.name)
 
