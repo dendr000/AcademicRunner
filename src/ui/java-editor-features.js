@@ -31,7 +31,7 @@
         monaco.editor.setModelMarkers(model, 'academicrunner', [])
         return
       }
-      const markers = window.javaDiagnostics.analyzeJava(model.getValue()).map((d) => {
+      const markers = window.javaDiagnostics.analyzeAll(model.getValue()).map((d) => {
         const start = model.getPositionAt(d.start)
         const end = model.getPositionAt(d.end)
         return {

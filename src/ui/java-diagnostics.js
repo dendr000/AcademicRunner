@@ -5,7 +5,10 @@
 //   - 빠진 import: 표준 라이브러리 클래스를 쓰는데 import 가 없음
 // 화면(DOM)을 모르는 순수 함수라 시험할 수 있다.
 (function (root) {
-  const jc = typeof module !== 'undefined' && module.exports ? require('./java-classes') : root.javaClasses
+  const node = typeof module !== 'undefined' && module.exports
+  const jc = node ? require('./java-classes') : root.javaClasses
+  const syntax = node ? require('./java-syntax') : root.javaSyntax
+  const scope = node ? require('./java-scope') : root.javaScope
 
   // java.lang 은 import 가 필요 없다.
   const LANG = 'String Integer Long Double Float Short Byte Character Boolean Number Object Math System StringBuilder StringBuffer Thread Runnable Exception RuntimeException Error Throwable Iterable Comparable CharSequence Void Class Enum Record StackOverflowError ArithmeticException NullPointerException IllegalArgumentException IllegalStateException IndexOutOfBoundsException ArrayIndexOutOfBoundsException NumberFormatException ClassCastException InterruptedException Override Deprecated FunctionalInterface SuppressWarnings SafeVarargs'.split(' ')
@@ -97,7 +100,39 @@
     return result
   }
 
-  const api = { analyzeJava, closestType, distance, KNOWN }
+  // 변수 이름 점검: 선언하지 않았거나(오타 후보를 알려 줌) 선언 전·블록 밖에서 쓴 이름
+  function variableDiagnostics(code, blanked) {
+    if (!scope.canAnalyze(blanked)) return []
+    const { findings, pool } = scope.analyzeScope(code)
+    return findings.map((f) => {
+      if (f.kind === 'scope') return { start: f.start, end: f.end, severity: 'error', message: `'${f.name}' 은(는) 이 위치에서 쓸 수 없습니다. 선언하기 전이거나, 선언한 { } 블록 밖입니다.` }
+      const limit = f.name.length <= 4 ? 1 : 2
+      let guess = null
+      let best = limit + 1
+      for (const cand of pool) {
+        if (Math.abs(cand.length - f.name.length) > limit) continue
+        const d = distance(f.name, cand)
+        if (d < best) {
+          best = d
+          guess = cand
+        }
+      }
+      return { start: f.start, end: f.end, severity: 'error', message: `'${f.name}' 을(를) 찾을 수 없습니다. 선언하지 않았거나 이름이 틀렸습니다.${guess ? ` '${guess}' 를 잘못 쓴 것 아닌가요?` : ''}` }
+    })
+  }
+
+  // 반환: 타입 점검 + 문법·변수 점검을 합쳐 위치 순으로 정렬한 목록
+  function analyzeAll(source) {
+    if (typeof source !== 'string' || source === '' || source.length > 200000) return []
+    const blanked = jc.blank(source)
+    const code = blanked.replace(/\b(?:import|package)\s[^;]*;/g, (s) => s.replace(/[^\n]/g, ' '))
+    const brackets = syntax.checkBrackets(code)
+    const found = [...analyzeJava(source), ...brackets, ...syntax.checkDuplicateKeywords(code), ...syntax.checkConditionAssign(code), ...syntax.checkLiteralTypes(code, source)]
+    if (brackets.length === 0) found.push(...variableDiagnostics(code, blanked))
+    return found.sort((a, b) => a.start - b.start || a.end - b.end)
+  }
+
+  const api = { analyzeJava, analyzeAll, closestType, distance, KNOWN }
   if (typeof module !== 'undefined' && module.exports) module.exports = api
   else root.javaDiagnostics = api
 })(typeof window !== 'undefined' ? window : globalThis)

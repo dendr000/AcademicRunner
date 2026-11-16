@@ -1,7 +1,7 @@
 {
   "name": "academicrunner",
   "productName": "AcademicRunner",
-  "version": "1.16.0",
+  "version": "1.17.0",
   "private": true,
   "description": "학원 과제 풀이 파일을 열어 고치고 실행·시험하는 개인용 Windows 앱",
   "author": "dendr000",

@@ -31,7 +31,8 @@
       detail: language === 'java' && source.length < 100000 && !kw.has(name) ? typeLabel(window.memberData.inferJavaType(source, name)) : undefined,
       kind: kw.has(name) ? monaco.languages.CompletionItemKind.Keyword : monaco.languages.CompletionItemKind.Variable,
       insertText: name,
-      sortText: (kw.has(name) ? '2' : '1') + name,
+      // 정렬: 파일 안의 변수·이름(0) -> 단축 입력(1, snippets.js) -> 언어 키워드(2)
+      sortText: (kw.has(name) ? '2' : '0') + name,
       range,
     }))
   }
