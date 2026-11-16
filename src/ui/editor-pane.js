@@ -220,6 +220,26 @@
         tabCompletion: 'on', // 단축 입력을 친 뒤 Tab 으로 펼침
         detectIndentation: false, // 파일 내용에서 탭 칸 수를 짐작하지 않고 설정값을 쓴다
       })
+      // Java: List< 처럼 타입 뒤에 < 를 치면 > 를 자동으로 닫고, 이미 있는 > 를 치면 덮어쓴다.
+      editor.onDidType((text) => {
+        if (!current || current.file.language !== 'java') return
+        const pos = editor.getPosition()
+        const m = editor.getModel()
+        if (text === '<') {
+          const line = m.getLineContent(pos.lineNumber)
+          if (window.newCompletion.shouldCloseAngle(line.slice(0, pos.column - 1))) {
+            editor.executeEdits('angle', [{ range: { startLineNumber: pos.lineNumber, endLineNumber: pos.lineNumber, startColumn: pos.column, endColumn: pos.column }, text: '>' }])
+            editor.setPosition(pos)
+          }
+        } else if (text === '>') {
+          const next = m.getValueInRange({ startLineNumber: pos.lineNumber, endLineNumber: pos.lineNumber, startColumn: pos.column, endColumn: pos.column + 1 })
+          const prev = m.getValueInRange({ startLineNumber: pos.lineNumber, endLineNumber: pos.lineNumber, startColumn: pos.column - 2, endColumn: pos.column - 1 })
+          // 방금 친 > 앞이 < 가 아니고 바로 뒤에 > 가 있으면, 자동으로 넣어 둔 > 를 덮어쓴 것으로 본다.
+          if (next === '>' && prev !== '<') {
+            editor.executeEdits('angle', [{ range: { startLineNumber: pos.lineNumber, endLineNumber: pos.lineNumber, startColumn: pos.column, endColumn: pos.column + 1 }, text: '' }])
+          }
+        }
+      })
       if (options.settings) {
         // 설정 창에서 바꾼 값을 바로 적용하고, Ctrl + 휠로 바뀐 글자 크기도 저장한다.
         options.settings.onChange((v) => editor.updateOptions(window.editorSettingsLib.toMonacoOptions(v)))

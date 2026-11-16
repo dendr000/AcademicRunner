@@ -42,10 +42,32 @@
     const asSnippet = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet
     for (const language of ['java', 'python', 'javascript']) {
       monaco.languages.registerCompletionItemProvider(language, {
-        triggerCharacters: ['.'],
-        provideCompletionItems(model, position) {
+        triggerCharacters: ['.', ' '],
+        provideCompletionItems(model, position, context) {
           const word = model.getWordUntilPosition(position)
           const before = model.getValueInRange({ startLineNumber: position.lineNumber, startColumn: 1, endLineNumber: position.lineNumber, endColumn: word.startColumn })
+          // new 뒤(Java): 선언한 타입에 맞는 구현 클래스를 맨 위에 보여 준다. 괄호와 <> 까지 넣는다.
+          if (language === 'java') {
+            const classes = window.javaClasses ? window.javaClasses.parseJavaClasses(model.getValue()) : []
+            const items = window.newCompletion.newSuggestions(before, classes.filter((c) => c.kind !== 'interface').map((c) => c.name))
+            if (items) {
+              const nr = { startLineNumber: position.lineNumber, endLineNumber: position.lineNumber, startColumn: word.startColumn, endColumn: word.endColumn }
+              return {
+                suggestions: items.map((i) => ({
+                  label: i.name,
+                  kind: monaco.languages.CompletionItemKind.Class,
+                  detail: i.detail,
+                  insertText: i.insert + '$0',
+                  insertTextRules: asSnippet,
+                  sortText: (i.preferred ? '0' : '1') + i.name,
+                  preselect: i.preferred,
+                  range: nr,
+                })),
+              }
+            }
+          }
+          // 공백으로 열린 제안은 new 뒤에서만 쓴다(그 밖의 공백마다 목록이 뜨지 않게).
+          if (context && context.triggerCharacter === ' ') return { suggestions: [] }
           if (!before.endsWith('.')) return { suggestions: wordSuggestions(monaco, model, position, word, language) }
           const receiver = window.memberData.receiverOf(before.slice(0, -1))
           const members = window.memberData.membersFor(language, model.getValue(), receiver, model.getOffsetAt(position))
